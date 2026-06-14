@@ -601,3 +601,58 @@ test "message bus exposes message snapshot" {
   ignore(bus.send(sim, "n2", "n1", "m2"))
   assert_eq(bus.messages().length(), 2)
 }
+
+///|
+test "queue stats summarize pending events" {
+  let sim = @moonsim.Sim::new()
+  let a = sim.schedule_after(5, "a")
+  ignore(sim.schedule_after(2, "b"))
+  ignore(sim.cancel(a))
+  let stats = sim.queue_stats()
+  assert_eq(stats.pending, 1)
+  assert_eq(stats.cancelled, 1)
+  assert_eq(stats.earliest_tick, 2)
+  assert_eq(stats.latest_tick, 2)
+}
+
+///|
+test "event views are sorted by tick" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(5, "late"))
+  ignore(sim.schedule_after(1, "early"))
+  let views = sim.event_views()
+  assert_eq(views[0].name, "early")
+  assert_eq(views[1].name, "late")
+}
+
+///|
+test "timeline text shows pending events" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "hello"))
+  assert_true(sim.timeline_text().contains("pending:hello"))
+}
+
+///|
+test "trace stats count event classes" {
+  let sim = @moonsim.Sim::new()
+  let id = sim.schedule_after(1, "a")
+  ignore(sim.cancel(id))
+  ignore(sim.next_int(10))
+  sim.inc_counter("x")
+  let stats = sim.trace_stats()
+  assert_eq(stats.entries, 4)
+  assert_eq(stats.schedules, 1)
+  assert_eq(stats.cancellations, 1)
+  assert_eq(stats.rng_draws, 1)
+  assert_eq(stats.metrics, 1)
+}
+
+///|
+test "trace stats summary is readable" {
+  let stats = @moonsim.trace_stats([
+    @moonsim.trace_entry(0, 1, "schedule", "a"),
+    @moonsim.trace_entry(1, 1, "execute", "a"),
+  ])
+  assert_true(stats.summary().contains("entries=2"))
+  assert_true(stats.summary().contains("executions=1"))
+}
