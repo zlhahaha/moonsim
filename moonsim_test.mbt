@@ -478,3 +478,42 @@ test "restored rng continues deterministically" {
   let right = @moonsim.Sim::restore(snapshot)
   assert_eq(left.next_int(1000), right.next_int(1000))
 }
+
+///|
+test "backoff grows and caps delay" {
+  let backoff = @moonsim.Backoff::new(initial=2, factor=2, max_delay=5)
+  let rng = @moonsim.Rng::new(1UL)
+  assert_eq(backoff.next_delay(rng), 2)
+  assert_eq(backoff.next_delay(rng), 4)
+  assert_eq(backoff.next_delay(rng), 5)
+  backoff.reset()
+  assert_eq(backoff.next_delay(rng), 2)
+}
+
+///|
+test "timer plan schedules repeating events" {
+  let sim = @moonsim.Sim::new()
+  let plan = @moonsim.timer_plan("tick", start_after=1, interval=2, times=3)
+  ignore(sim.install_timer(plan))
+  let report = sim.run_report_until_idle()
+  assert_eq(report.steps, 3)
+  assert_eq(report.final_tick, 5)
+}
+
+///|
+test "timeout uses high priority" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_at(3, "normal"))
+  ignore(sim.schedule_timeout(3, "request"))
+  let event = sim.run_next().unwrap()
+  assert_eq(event.name, "timeout:request")
+}
+
+///|
+test "schedule backoff records timer trace" {
+  let sim = @moonsim.Sim::new(seed=2UL)
+  let backoff = @moonsim.Backoff::new(initial=1, jitter=1)
+  ignore(sim.schedule_backoff(backoff, "retry"))
+  assert_eq(sim.trace()[0].kind, "timer.backoff")
+  assert_eq(sim.pending_count(), 1)
+}
