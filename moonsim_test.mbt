@@ -65,3 +65,36 @@ test "scheduler honors priority within same tick" {
   let event = sim.run_next().unwrap()
   assert_eq(event.name, "urgent")
 }
+
+///|
+test "cancelled events are skipped" {
+  let sim = @moonsim.Sim::new(seed=7UL)
+  let dropped = sim.schedule_after(1, "drop-me")
+  let kept = sim.schedule_after(2, "keep-me")
+  assert_eq(sim.cancel(dropped), true)
+  assert_eq(sim.cancel(dropped), false)
+  assert_eq(sim.pending_count(), 1)
+  let event = sim.run_next().unwrap()
+  assert_eq(event.id, kept)
+  assert_eq(event.name, "keep-me")
+  assert_true(sim.run_next() is None)
+}
+
+///|
+test "run until idle returns executed step count" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "one"))
+  ignore(sim.schedule_after(2, "two"))
+  assert_eq(sim.run_until_idle(), 2)
+  assert_eq(sim.pending_count(), 0)
+  assert_eq(sim.run_until_idle(), 0)
+}
+
+///|
+test "run until idle respects max steps" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "one"))
+  ignore(sim.schedule_after(2, "two"))
+  assert_eq(sim.run_until_idle(max_steps=1), 1)
+  assert_eq(sim.pending_count(), 1)
+}

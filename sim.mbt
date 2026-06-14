@@ -18,6 +18,17 @@ pub fn Sim::time(self : Sim) -> Int {
 }
 
 ///|
+pub fn Sim::pending_count(self : Sim) -> Int {
+  let mut count = 0
+  for event in self.events {
+    if !event.cancelled {
+      count += 1
+    }
+  }
+  count
+}
+
+///|
 pub fn Sim::schedule_at(
   self : Sim,
   tick : Int,
@@ -43,6 +54,19 @@ pub fn Sim::schedule_after(
 }
 
 ///|
+pub fn Sim::cancel(self : Sim, event_id : Int) -> Bool {
+  let mut i = 0
+  while i < self.events.length() {
+    if self.events[i].id == event_id && !self.events[i].cancelled {
+      self.events[i].cancel()
+      return true
+    }
+    i += 1
+  }
+  false
+}
+
+///|
 pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
   let index = self.next_event_index()
   match index {
@@ -53,6 +77,18 @@ pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
       Some(event)
     }
   }
+}
+
+///|
+pub fn Sim::run_until_idle(self : Sim, max_steps? : Int = 100000) -> Int {
+  let mut steps = 0
+  while steps < max_steps {
+    match self.run_next() {
+      None => return steps
+      Some(_) => steps += 1
+    }
+  }
+  steps
 }
 
 ///|
