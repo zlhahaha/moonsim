@@ -16,6 +16,12 @@ moon run cmd/main
 
 The CLI demo prints a deterministic retry-style simulation trace and digest.
 
+Run the queue example:
+
+```bash
+moon run examples/queue
+```
+
 ## Competition Fit
 
 This project directly targets the recommended "Deterministic simulation
