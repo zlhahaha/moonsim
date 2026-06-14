@@ -1,16 +1,17 @@
-# MoonBit OSC2026 Ecosystem Research
+# MoonBit Ecosystem Overlap Notes
 
 Date: 2026-06-14
 
-This document records the first round of ecosystem research for the MoonBit OSC2026 competition project. The goal is to avoid direct duplication of mature MoonBit ecosystem projects and to select a topic with clear reuse value, manageable implementation scope, and strong differentiation.
+This document records an initial ecosystem research pass for `moonsim`. The
+goal is to avoid direct duplication of mature MoonBit ecosystem projects and to
+select a topic with clear reuse value, manageable implementation scope, and
+strong differentiation.
 
-## Competition Constraint
+## Project Criteria
 
 The project should contribute to the MoonBit open-source ecosystem. It should have a clear function, real usage scenarios, and reusable value.
 
 A project must not directly migrate or duplicate a mature existing MoonBit project with highly overlapping functionality. If it builds on an existing direction, the added value and independent contribution must be clearly stated.
-
-Suggested implementation scale: roughly 4k-10k effective MoonBit LOC.
 
 ## Research Method
 
@@ -19,7 +20,6 @@ Search sources used in this round:
 - GitHub repository search through GitHub MCP
 - GitHub code search through GitHub MCP
 - Known MoonBit ecosystem organizations such as `moonbitlang` and `moonbit-community`
-- Competition website source repository `moonbitlang/OSC2026`
 
 Search topics:
 
@@ -63,7 +63,7 @@ Representative projects found:
 
 Collision risk: High.
 
-Recommendation: Do not build a general template engine. A safe adjacent angle would need to be very specific, such as template migration tooling, template linting, visual debugging, or integration around an existing template engine. For a competition entry, this direction is no longer ideal unless we define a sharply different contribution.
+Recommendation: Do not build a general template engine. A safe adjacent angle would need to be very specific, such as template migration tooling, template linting, visual debugging, or integration around an existing template engine. This direction is no longer ideal unless we define a sharply different contribution.
 
 ### Graph Algorithms / Pathfinding
 
@@ -131,7 +131,7 @@ Possible differentiation:
 - Multi-target runner notes for native/js/wasm where feasible
 - Example benchmark suites for collections, parsers, and algorithms
 
-Recommendation: Promising as a secondary option, but must be expanded beyond a stopwatch into a full benchmark harness to fit the 4k-10k LOC target.
+Recommendation: Promising as a secondary option, but must be expanded beyond a stopwatch into a full benchmark harness to provide enough reusable value.
 
 ### Deterministic Simulation
 
@@ -153,7 +153,7 @@ Possible differentiation:
 - Model-test helpers for algorithms, queues, protocols, games, or distributed systems
 - CLI demo runner and report generator
 
-Recommendation: Strong candidate. It matches a recommended topic, has enough scale, avoids obvious direct overlap, and can demonstrate real reuse through examples.
+Recommendation: Strong candidate. It has enough natural scope, avoids obvious direct overlap, and can demonstrate real reuse through examples.
 
 ### Build Tool Similar To n2 / ninja
 
@@ -163,7 +163,7 @@ Representative projects found:
 
 Collision risk: Low.
 
-Risk: Harder engineering surface. Requires filesystem handling, process execution, dependency graph parsing, incremental rebuild semantics, CLI ergonomics, and cross-platform behavior. Scope could easily exceed the competition window.
+Risk: Harder engineering surface. Requires filesystem handling, process execution, dependency graph parsing, incremental rebuild semantics, CLI ergonomics, and cross-platform behavior. Scope could easily exceed a focused library milestone.
 
 Recommendation: Interesting but higher risk than deterministic simulation.
 
@@ -234,9 +234,9 @@ Existing search results show domain-specific simulation code, but no generic Moo
 - `examples`: queue simulation, traffic light, retry/backoff, game loop, small protocol model
 - `cmd`: CLI runner for examples and trace comparison
 
-### Competition Differentiation
+### Differentiation
 
-If another team also chooses deterministic simulation, this project should stand out through:
+If another project also chooses deterministic simulation, `moonsim` should stand out through:
 
 - replayable traces and deterministic digests
 - clear library API plus CLI scenario runner

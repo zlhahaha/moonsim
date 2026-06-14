@@ -1,6 +1,7 @@
 # Roadmap
 
-This roadmap tracks the initial work for the MoonBit OSC2026 project.
+This roadmap tracks the initial work for `moonsim` as a reusable MoonBit
+simulation library.
 
 ## Phase 0: Topic Confirmation
 
@@ -8,17 +9,16 @@ Status: complete
 
 Tasks:
 
-- Review `docs/ecosystem-research.md`.
-- Review `docs/project-proposal-moonsim.md`.
-- Confirm whether the primary topic is `moonsim`.
-- Confirm backup topic, likely benchmark harness.
-- Write final `DESIGN.md` after confirmation.
+- Review ecosystem overlap and adjacent MoonBit libraries.
+- Confirm the primary topic: deterministic simulation and replay.
+- Define non-goals and module boundaries.
+- Write the initial design document.
 
 Acceptance criteria:
 
 - Topic is final.
 - Non-goals are explicit.
-- Competition differentiation is clear.
+- Reuse value is clear.
 
 ## Phase 1: MoonBit Project Skeleton
 
@@ -26,8 +26,7 @@ Status: complete
 
 Tasks:
 
-- Create `moon.mod.json`.
-- Create package layout.
+- Create the MoonBit package layout.
 - Add `README.md`.
 - Add `LICENSE`.
 - Add `DESIGN.md`.
@@ -68,10 +67,10 @@ Status: complete
 Tasks:
 
 - Add trace entries for scheduling, execution, cancellation, RNG, metrics, and user notes.
-- Add deterministic digest or replay comparison.
+- Add deterministic digest and trace comparison.
 - Add counters.
 - Add gauges.
-- Add sample metrics or simple histograms.
+- Add sample metrics and simple histogram summaries.
 
 Acceptance criteria:
 
@@ -79,55 +78,57 @@ Acceptance criteria:
 - A trace can be compared against a later run.
 - Metrics are deterministic and testable.
 
-## Phase 4: Scenario Helpers
+## Phase 4: Scenario And Snapshot Helpers
 
-Status: partial
+Status: complete
 
 Tasks:
 
 - Add scenario runner helpers.
 - Add assertion helpers.
 - Add readable failure messages.
-- Add fixtures for repeatable tests.
+- Add snapshot, restore, and fork comparison helpers.
 
 Acceptance criteria:
 
 - Example scenarios are shorter and clearer than raw scheduler calls.
 - Scenario failures show useful context.
+- Forked runs can be compared from the same checkpoint.
 
-## Phase 5: Examples And CLI
+## Phase 5: Model Helpers And Examples
 
-Status: partial
+Status: complete
 
 Tasks:
 
 - Queue simulation example.
 - Retry/backoff simulation example.
-- Traffic light or game loop example.
-- CLI runner for examples.
-- Trace output from CLI.
+- Traffic light simulation example.
+- Game loop fork comparison example.
+- Message protocol example.
+- State-machine example.
+- CLI runner for demo output.
 
 Acceptance criteria:
 
-- At least three examples are runnable.
+- Examples are runnable from the command line.
 - README shows how to run them.
 - Examples demonstrate real usage scenarios.
 
-## Phase 6: Competition Polish
+## Phase 6: Documentation And Polish
 
-Status: partial
+Status: in progress
 
 Tasks:
 
-- Expand README.
-- Complete `DESIGN.md`.
-- Add `docs/api.md`.
-- Add `docs/examples.md`.
-- Add final ecosystem comparison and independent contribution section.
-- Run formatting and tests.
+- Keep README concise and user-focused.
+- Maintain `DESIGN.md`.
+- Maintain `docs/api.md`.
+- Maintain `docs/examples.md`.
+- Keep examples and tests passing.
 
 Acceptance criteria:
 
-- Project explains why it does not duplicate existing MoonBit projects.
 - Documentation is enough for another developer to use the library.
 - Tests and examples demonstrate completeness.
+- Public docs emphasize reusable infrastructure and model-testing value.

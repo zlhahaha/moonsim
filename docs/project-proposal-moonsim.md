@@ -1,4 +1,4 @@
-# Project Proposal: moonsim
+# moonsim Background Notes
 
 Working title: `moonsim`
 
@@ -6,11 +6,14 @@ Subtitle: deterministic simulation, trace, and replay framework for MoonBit.
 
 ## One-Sentence Pitch
 
-`moonsim` is a reusable MoonBit framework for building deterministic simulations with virtual time, seeded randomness, event scheduling, trace recording, and replay verification.
+`moonsim` is a reusable MoonBit framework for building deterministic
+simulations with virtual time, seeded randomness, event scheduling, trace
+recording, and replay verification.
 
 ## Why This Topic
 
-The first ecosystem research pass found high overlap in several obvious competition directions:
+The initial ecosystem research found high overlap in several obvious library
+directions:
 
 - Markdown parsers already exist.
 - Template engines already exist and at least one is published on mooncakes.io.
@@ -18,9 +21,13 @@ The first ecosystem research pass found high overlap in several obvious competit
 - Logging/tracing libraries already exist.
 - Collection utilities already exist.
 
-Deterministic simulation, however, appears to have low direct overlap. Search results show domain-specific simulations inside games or industrial projects, but not a general reusable simulation kernel.
+Deterministic simulation, however, appears to have low direct overlap. Search
+results show domain-specific simulations inside games or industrial projects,
+but not a general reusable simulation kernel.
 
-This makes `moonsim` a good competition candidate: it is useful, not just a toy; it can reach the expected 4k-10k LOC scale; and it has clear differentiation through replay, traces, deterministic randomness, and scenario testing.
+This makes `moonsim` a useful MoonBit ecosystem project: it is reusable, can
+grow naturally from examples and tests, and has clear differentiation through
+replay, traces, deterministic randomness, and scenario testing.
 
 ## Target Users
 
@@ -49,43 +56,13 @@ This makes `moonsim` a good competition candidate: it is useful, not just a toy;
 5. Not a replacement for logging/tracing libraries such as `moontrace` or OpenTelemetry.
 6. Not a benchmark harness, although examples may emit timing-independent metrics.
 
-## Proposed Package Layout
-
-```text
-moonsim/
-  moon.mod.json
-  README.md
-  DESIGN.md
-  docs/
-    ecosystem-research.md
-    project-proposal-moonsim.md
-    api.md
-    examples.md
-  src/
-    core/
-    rng/
-    scheduler/
-    trace/
-    scenario/
-    snapshot/
-    metrics/
-    cmd/main/
-    examples/queue/
-    examples/traffic/
-    examples/retry/
-    examples/game_loop/
-  tests/
-```
-
-The exact layout should be adjusted after creating the MoonBit skeleton and checking current `moon` package conventions.
-
 ## Core Concepts
 
 ### Virtual Time
 
-The framework should use deterministic ticks rather than wall-clock time.
+The framework uses deterministic ticks rather than wall-clock time.
 
-Example concepts:
+Key concepts:
 
 - `Tick`: integer simulation time
 - `Duration`: tick delta
@@ -99,7 +76,7 @@ The scheduler owns pending events and executes them in deterministic order.
 Ordering rule:
 
 1. earlier tick first
-2. lower priority first or higher priority first, whichever the API defines
+2. lower priority first
 3. lower event id as stable tie-breaker
 
 Capabilities:
@@ -108,7 +85,6 @@ Capabilities:
 - schedule after delay
 - schedule at tick
 - cancel event
-- repeat event
 - run next event
 - run until tick
 - run until idle
@@ -116,7 +92,7 @@ Capabilities:
 
 ### Deterministic RNG
 
-Seeded RNG should make all random choices replayable.
+Seeded RNG makes random choices replayable.
 
 Initial scope:
 
@@ -124,14 +100,13 @@ Initial scope:
 - `next_u64`
 - `next_int(bound)`
 - `next_bool`
-- `choose` from array
-- simple weighted choice if practical
+- range and distribution helpers
 
 ### Trace And Replay
 
-Trace should capture enough information to debug and verify a run.
+Trace captures enough information to debug and verify a run.
 
-Trace entries may include:
+Trace entries include:
 
 - event scheduled
 - event cancelled
@@ -141,52 +116,35 @@ Trace entries may include:
 - user note
 - scenario assertion
 
-Replay can compare:
-
-- event order
-- deterministic digest
-- final metrics
-- explicit trace expectations
+Replay and comparison can use event order, deterministic digest, final metrics,
+and explicit trace expectations.
 
 ### Scenario Testing
 
-Scenario helpers should make tests readable.
-
-Possible API shape:
-
-```moonbit
-let sim = @moonsim.Sim::new(seed=42UL)
-sim.schedule_after(5, "wake", fn(ctx) {
-  ctx.metric_counter("wakeups").inc(1)
-})
-sim.run_until_idle()
-assert_eq(sim.metrics().counter("wakeups"), 1)
-```
-
-This is illustrative only. Final API should follow actual MoonBit syntax and package conventions.
+Scenario helpers make tests readable by bundling setup, assertions, and failure
+reports around a deterministic simulation.
 
 ### Metrics
 
-Metrics should be simulation outputs, not wall-clock performance metrics.
+Metrics are simulation outputs, not wall-clock performance metrics.
 
-Initial metrics:
+Implemented metric types include:
 
 - counter
 - gauge
-- histogram or sample list
+- sample list
+- histogram summary
 - named metric snapshot
 
 ### Snapshot
 
-Snapshot support can start simple.
+Snapshot support focuses on framework-owned state:
 
-Possible MVP:
-
-- snapshot clock, pending event metadata, RNG state, and metrics
-- restore framework-owned state
-- user state restoration via explicit callback or trait, if feasible
-
-This should not become a complex serialization framework in v0.1.
+- current clock
+- pending event metadata
+- RNG state
+- metrics
+- trace state used for fork comparison
 
 ## Example Scenarios
 
@@ -219,25 +177,26 @@ Model cyclic traffic lights and vehicle movement.
 Shows:
 
 - repeating events
-- state transitions
+- state-like phase changes
 - metrics over virtual time
 
 ### Game Loop Simulation
 
-Model a simple turn-based or tick-based game loop.
+Model a simple fixed-tick game loop.
 
 Shows:
 
 - fixed tick stepping
 - deterministic random choices
 - replayable trace
+- snapshot-based strategy comparison
 
 ## Milestones
 
 ### Milestone 0: Setup
 
 - Create MoonBit project skeleton.
-- Add license, README, design docs, and CI notes.
+- Add license, README, design docs, and build notes.
 - Confirm build/test commands.
 
 ### Milestone 1: Deterministic Kernel
@@ -264,24 +223,15 @@ Shows:
 
 - Add queue simulation.
 - Add retry/backoff simulation.
-- Add traffic light or game loop example.
+- Add traffic light and game loop examples.
 - Add CLI runner for examples and trace output.
 
-### Milestone 5: Competition Polish
+### Milestone 5: Documentation And Polish
 
-- Expand README.
-- Write `DESIGN.md`.
-- Write `docs/api.md` and `docs/examples.md`.
-- Add final ecosystem comparison and independent contribution section.
-- Run `moon fmt`, `moon check`, and `moon test`.
-
-## Expected Evaluation Highlights
-
-- Low direct overlap with known MoonBit ecosystem projects.
-- Clear reusable value across games, protocols, schedulers, and algorithm experiments.
-- Determinism is easy to demonstrate through trace replay.
-- Strong tests can be written without external services.
-- Scope fits the 4k-10k effective MoonBit LOC target.
+- Keep README concise.
+- Maintain `DESIGN.md`.
+- Maintain `docs/api.md` and `docs/examples.md`.
+- Keep examples and tests passing.
 
 ## Main Risks
 
@@ -291,16 +241,14 @@ Mitigation: build examples early and let them shape the API.
 
 ### Risk: Snapshot Scope Grows Too Large
 
-Mitigation: keep v0.1 snapshot support limited to framework-owned state and explicit user hooks.
+Mitigation: keep snapshot support focused on framework-owned state and explicit
+user-level model data.
 
 ### Risk: CLI Distracts From Library Quality
 
-Mitigation: implement CLI only after the library API and tests are stable.
+Mitigation: keep CLI as a thin demonstration layer over the library API.
 
 ### Risk: MoonBit Runtime APIs Differ Across Targets
 
-Mitigation: avoid wall-clock and OS dependencies in the core. Keep target-specific code out of the deterministic kernel.
-
-## Decision
-
-Recommended as the primary competition direction unless a second ecosystem audit finds a mature generic deterministic simulation framework before implementation starts.
+Mitigation: avoid wall-clock and OS dependencies in the core. Keep
+target-specific code out of the deterministic kernel.

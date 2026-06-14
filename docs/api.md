@@ -1,7 +1,6 @@
 # moonsim API
 
-This document describes the current public API shape for the first competition
-milestone.
+This document describes the current public API shape.
 
 ## Simulation
 
@@ -58,3 +57,15 @@ let requests = sim.metrics().counter("requests")
 ```
 
 The scheduler automatically increments `events_executed`.
+
+## Higher-Level APIs
+
+The library also includes:
+
+- `Scenario`: scenario assertions and readable failure reports.
+- `SimSnapshot`: checkpoint, restore, and fork comparison.
+- `Backoff` and `TimerPlan`: deterministic retry and interval helpers.
+- `StateMachine`: transition modeling and trace integration.
+- `MessageBus`: delayed message delivery and drop modeling.
+- `ValidationReport`: invariant checks for simulations, traces, and metrics.
+- `ExperimentReport`: model-suite reporting for demos and comparisons.

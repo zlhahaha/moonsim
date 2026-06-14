@@ -2,9 +2,28 @@
 
 Deterministic simulation, trace, and replay framework for MoonBit.
 
-`moonsim` is a MoonBit OSC2026 competition project. It provides a reusable
-virtual-time simulation kernel for tests, demos, model experiments, game logic,
-retry policies, queueing systems, and protocol sketches.
+`moonsim` provides a reusable virtual-time simulation kernel for tests,
+model experiments, game logic, retry policies, queueing systems, protocol
+sketches, and other workflows where reproducibility matters.
+
+## Use Cases
+
+- Test retry, timeout, and backoff logic without waiting for wall-clock time.
+- Model queues, schedulers, state machines, and small protocols.
+- Replay game-loop or model decisions from the same seed.
+- Compare two strategies from the same checkpoint.
+- Produce stable traces, digests, and metrics for regression tests.
+
+## Core Features
+
+- Virtual simulation time based on deterministic ticks.
+- Stable event scheduling with delay, cancellation, and run limits.
+- Seeded random number generation for reproducible runs.
+- Trace recording, trace formatting, and deterministic digests.
+- Metrics for counters, gauges, samples, and summaries.
+- Scenario helpers for readable model tests.
+- Snapshot, restore, and fork comparison helpers.
+- Reusable model helpers for timers, backoff, state machines, and messages.
 
 ## Quick Start
 
@@ -28,59 +47,30 @@ println(sim.metrics().counter("events_executed"))
 println(sim.digest())
 ```
 
-Run the queue example:
+## Examples
 
 ```bash
 moon run examples/queue
-```
-
-Run the retry/backoff example:
-
-```bash
 moon run examples/retry
-```
-
-Run the traffic light example:
-
-```bash
 moon run examples/traffic
-```
-
-Run the game loop fork example:
-
-```bash
 moon run examples/game_loop
-```
-
-Run the message protocol example:
-
-```bash
 moon run examples/protocol
-```
-
-Run the state machine example:
-
-```bash
 moon run examples/order_state
 ```
 
-## Competition Fit
+The examples cover queueing, retry/backoff, traffic lights, fixed-tick game
+loops, message delivery, and state-machine transitions.
 
-This project directly targets the recommended "Deterministic simulation
-framework" direction. It is designed as reusable MoonBit infrastructure rather
-than a one-off application.
+## Documentation
 
-The initial ecosystem research found mature or highly overlapping projects in
-Markdown parsing, template rendering, graph/pathfinding, collections, and
-logging/tracing. `moonsim` avoids those crowded areas and focuses on a reusable
-deterministic simulation kernel with trace, digest, metrics, CLI demos, and
-examples.
+- `DESIGN.md`: design goals, non-goals, and module boundaries.
+- `docs/api.md`: public API notes.
+- `docs/examples.md`: runnable example notes.
+- `docs/roadmap.md`: project roadmap.
 
-See:
+## Current Status
 
-- `docs/ecosystem-research.md`
-- `docs/project-proposal-moonsim.md`
-- `docs/roadmap.md`
-- `docs/api.md`
-- `docs/examples.md`
-- `DESIGN.md`
+- 150+ tests.
+- No runtime dependency beyond MoonBit core.
+- Deterministic scheduler, RNG, trace/replay, metrics, scenarios, snapshots,
+  model helpers, validation, reports, and examples.
