@@ -67,6 +67,30 @@ pub fn Scenario::expect_digest(self : Scenario, value : UInt64) -> Scenario {
 }
 
 ///|
+pub fn Scenario::expect_trace_contains(self : Scenario, text : String) -> Scenario {
+  self.expectations.push({ kind: "trace_contains", name: "trace", expected: text })
+  self
+}
+
+///|
+pub fn Scenario::expect_sample_count(self : Scenario, name : String, value : Int) -> Scenario {
+  self.expectations.push({ kind: "sample_count", name, expected: value.to_string() })
+  self
+}
+
+///|
+pub fn Scenario::expect_summary_min(self : Scenario, name : String, value : Int) -> Scenario {
+  self.expectations.push({ kind: "summary_min", name, expected: value.to_string() })
+  self
+}
+
+///|
+pub fn Scenario::expect_summary_max(self : Scenario, name : String, value : Int) -> Scenario {
+  self.expectations.push({ kind: "summary_max", name, expected: value.to_string() })
+  self
+}
+
+///|
 pub fn Scenario::create_sim(self : Scenario) -> Sim {
   Sim::new(seed=self.seed)
 }
@@ -104,6 +128,10 @@ fn Scenario::check_expectation(
     "final_tick" => sim.time().to_string()
     "pending" => sim.pending_count().to_string()
     "digest" => sim.digest().to_string()
+    "trace_contains" => if sim.trace_text().contains(expectation.expected) { expectation.expected } else { "" }
+    "sample_count" => sim.metrics().sample_count(expectation.name).to_string()
+    "summary_min" => sim.metrics().summary(expectation.name).min.to_string()
+    "summary_max" => sim.metrics().summary(expectation.name).max.to_string()
     _ => ""
   }
   if actual != expectation.expected {
@@ -137,4 +165,19 @@ pub fn ScenarioReport::failure_text(self : ScenarioReport) -> String {
     )
   }
   buf.to_string()
+}
+
+///|
+pub fn ScenarioReport::detailed_text(self : ScenarioReport) -> String {
+  let base = self.summary()
+  if self.passed {
+    base
+  } else {
+    base + "\n" + self.failure_text()
+  }
+}
+
+///|
+pub fn ScenarioReport::failure_count(self : ScenarioReport) -> Int {
+  self.failures.length()
 }

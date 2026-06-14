@@ -656,3 +656,47 @@ test "trace stats summary is readable" {
   assert_true(stats.summary().contains("entries=2"))
   assert_true(stats.summary().contains("executions=1"))
 }
+
+///|
+test "scenario verifies trace contains" {
+  let scenario = @moonsim.Scenario::new("trace").expect_trace_contains("schedule")
+  let sim = scenario.create_sim()
+  ignore(sim.schedule_after(1, "visible"))
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, true)
+}
+
+///|
+test "scenario reports missing trace text" {
+  let scenario = @moonsim.Scenario::new("trace-missing").expect_trace_contains("not-there")
+  let sim = scenario.create_sim()
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, false)
+  assert_true(report.detailed_text().contains("not-there"))
+}
+
+///|
+test "scenario verifies sample count and summary range" {
+  let scenario = @moonsim.Scenario::new("samples")
+    .expect_sample_count("latency", 3)
+    .expect_summary_min("latency", 2)
+    .expect_summary_max("latency", 8)
+  let sim = scenario.create_sim()
+  sim.sample("latency", 8)
+  sim.sample("latency", 2)
+  sim.sample("latency", 5)
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, true)
+  assert_eq(report.failure_count(), 0)
+}
+
+///|
+test "scenario detailed text includes failures" {
+  let scenario = @moonsim.Scenario::new("bad-samples").expect_sample_count("latency", 2)
+  let sim = scenario.create_sim()
+  sim.sample("latency", 1)
+  let report = scenario.verify(sim)
+  assert_eq(report.failure_count(), 1)
+  assert_true(report.detailed_text().contains("FAIL bad-samples"))
+  assert_true(report.detailed_text().contains("expected=2 actual=1"))
+}
