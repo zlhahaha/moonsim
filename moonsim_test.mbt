@@ -123,3 +123,36 @@ test "trace entry formats useful text" {
   let entry = @moonsim.trace_entry(3, 9, "execute", "job")
   assert_eq(entry.format(), "tick=3 event=9 kind=execute detail=job")
 }
+
+///|
+test "digest is stable for identical runs" {
+  let left = @moonsim.Sim::new(seed=42UL)
+  ignore(left.schedule_after(5, "a"))
+  ignore(left.schedule_after(2, "b"))
+  ignore(left.next_int(100))
+  ignore(left.run_until_idle())
+
+  let right = @moonsim.Sim::new(seed=42UL)
+  ignore(right.schedule_after(5, "a"))
+  ignore(right.schedule_after(2, "b"))
+  ignore(right.next_int(100))
+  ignore(right.run_until_idle())
+
+  assert_eq(left.digest(), right.digest())
+  assert_eq(@moonsim.trace_digest(left.trace()), right.digest())
+}
+
+///|
+test "digest changes when event order changes" {
+  let left = @moonsim.Sim::new()
+  ignore(left.schedule_after(1, "a"))
+  ignore(left.schedule_after(2, "b"))
+  ignore(left.run_until_idle())
+
+  let right = @moonsim.Sim::new()
+  ignore(right.schedule_after(2, "b"))
+  ignore(right.schedule_after(1, "a"))
+  ignore(right.run_until_idle())
+
+  assert_true(left.digest() != right.digest())
+}

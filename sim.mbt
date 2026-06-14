@@ -108,6 +108,11 @@ pub fn Sim::trace(self : Sim) -> Array[TraceEntry] {
 }
 
 ///|
+pub fn Sim::digest(self : Sim) -> UInt64 {
+  trace_digest(self.trace_entries)
+}
+
+///|
 fn Sim::record(self : Sim, event_id : Int, kind : String, detail : String) -> Unit {
   self.trace_entries.push(trace_entry(self.now, event_id, kind, detail))
 }
