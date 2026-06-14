@@ -384,3 +384,52 @@ test "metric counter delta compares snapshots" {
   after.inc("requests", delta=5)
   assert_eq(@moonsim.metrics_counter_delta(before, after, "requests"), 3)
 }
+
+///|
+test "scenario verifies counters and final tick" {
+  let scenario = @moonsim.Scenario::new("basic")
+    .expect_counter("events_executed", 2)
+    .expect_final_tick(2)
+    .expect_pending(0)
+  let sim = scenario.create_sim()
+  ignore(sim.schedule_after(1, "one"))
+  ignore(sim.schedule_after(2, "two"))
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, true)
+  assert_eq(report.failures.length(), 0)
+  assert_true(report.summary().contains("PASS basic"))
+}
+
+///|
+test "scenario reports counter failure" {
+  let scenario = @moonsim.Scenario::new("bad").expect_counter("events_executed", 3)
+  let sim = scenario.create_sim()
+  ignore(sim.schedule_after(1, "one"))
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, false)
+  assert_eq(report.failures.length(), 1)
+  assert_true(report.failure_text().contains("expected=3 actual=1"))
+}
+
+///|
+test "scenario can verify digest" {
+  let sim = @moonsim.Sim::new(seed=1UL)
+  ignore(sim.schedule_after(1, "one"))
+  ignore(sim.run_until_idle())
+  let digest = sim.digest()
+
+  let scenario = @moonsim.Scenario::new("digest").expect_digest(digest)
+  let rerun = scenario.create_sim()
+  ignore(rerun.schedule_after(1, "one"))
+  let report = scenario.verify(rerun)
+  assert_eq(report.passed, true)
+}
+
+///|
+test "scenario verifies gauge" {
+  let scenario = @moonsim.Scenario::new("gauge").expect_gauge("depth", 4)
+  let sim = scenario.create_sim()
+  sim.set_gauge("depth", 4)
+  let report = scenario.verify(sim)
+  assert_eq(report.passed, true)
+}
