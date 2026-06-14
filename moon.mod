@@ -4,7 +4,7 @@ version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/zlhahaha/moonbit-osc2026"
+repository = "https://github.com/zlhahaha/moonsim"
 
 license = "Apache-2.0"
 
