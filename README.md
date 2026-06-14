@@ -46,6 +46,24 @@ Run the traffic light example:
 moon run examples/traffic
 ```
 
+Run the game loop fork example:
+
+```bash
+moon run examples/game_loop
+```
+
+Run the message protocol example:
+
+```bash
+moon run examples/protocol
+```
+
+Run the state machine example:
+
+```bash
+moon run examples/order_state
+```
+
 ## Competition Fit
 
 This project directly targets the recommended "Deterministic simulation

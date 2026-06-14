@@ -57,3 +57,30 @@ Demonstrates:
 - state-like phase changes
 - counters and sample summaries
 - deterministic digest
+
+## Game Loop Simulation
+
+```bash
+moon run examples/game_loop
+```
+
+Demonstrates fixed ticks, seeded damage rolls, checkpointing, and forked
+strategy comparison.
+
+## Message Protocol Simulation
+
+```bash
+moon run examples/protocol
+```
+
+Demonstrates node-to-node messages, delivery delay, drops, retries, timers, and
+message metrics.
+
+## Order State Simulation
+
+```bash
+moon run examples/order_state
+```
+
+Demonstrates state transitions, rejected events, transition trace records, and
+state-machine metrics.
