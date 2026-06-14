@@ -6,11 +6,19 @@ pub(all) struct Sim {
   mut events : Array[ScheduledEvent]
   mut trace_entries : Array[TraceEntry]
   rng : Rng
+  metrics : Metrics
 }
 
 ///|
 pub fn Sim::new(seed? : UInt64 = 1UL) -> Sim {
-  { now: 0, next_id: 1, events: [], trace_entries: [], rng: Rng::new(seed) }
+  {
+    now: 0,
+    next_id: 1,
+    events: [],
+    trace_entries: [],
+    rng: Rng::new(seed),
+    metrics: Metrics::new(),
+  }
 }
 
 ///|
@@ -78,6 +86,7 @@ pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
       let event = self.events.remove(i)
       self.now = event.tick
       self.record(event.id, "execute", event.name)
+      self.metrics.inc("events_executed")
       Some(event)
     }
   }
@@ -110,6 +119,17 @@ pub fn Sim::trace(self : Sim) -> Array[TraceEntry] {
 ///|
 pub fn Sim::digest(self : Sim) -> UInt64 {
   trace_digest(self.trace_entries)
+}
+
+///|
+pub fn Sim::metrics(self : Sim) -> Metrics {
+  self.metrics
+}
+
+///|
+pub fn Sim::inc_counter(self : Sim, name : String, delta? : Int = 1) -> Unit {
+  self.metrics.inc(name, delta~)
+  self.record(0, "metric.counter", name + "+=" + delta.to_string())
 }
 
 ///|

@@ -156,3 +156,25 @@ test "digest changes when event order changes" {
 
   assert_true(left.digest() != right.digest())
 }
+
+///|
+test "metrics count executed events" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "one"))
+  ignore(sim.schedule_after(2, "two"))
+  ignore(sim.run_until_idle())
+  assert_eq(sim.metrics().counter("events_executed"), 2)
+  assert_eq(sim.metrics().counter("missing"), 0)
+}
+
+///|
+test "custom counters are traced and snapshotted" {
+  let sim = @moonsim.Sim::new()
+  sim.inc_counter("requests")
+  sim.inc_counter("requests", delta=3)
+  assert_eq(sim.metrics().counter("requests"), 4)
+  assert_eq(sim.metrics().snapshot().length(), 1)
+  let trace = sim.trace()
+  assert_eq(trace[0].kind, "metric.counter")
+  assert_eq(trace[1].detail, "requests+=3")
+}
