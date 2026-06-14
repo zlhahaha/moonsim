@@ -14,6 +14,8 @@ moon test
 moon run cmd/main
 ```
 
+The CLI demo prints a deterministic retry-style simulation trace and digest.
+
 ## Competition Fit
 
 This project directly targets the recommended "Deterministic simulation
