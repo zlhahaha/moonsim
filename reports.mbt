@@ -67,3 +67,8 @@ pub fn render_model_summaries(summaries : Array[ModelSummary]) -> String {
   }
   buf.to_string()
 }
+
+///|
+pub fn render_experiment_report(report : ExperimentReport) -> String {
+  report.render()
+}

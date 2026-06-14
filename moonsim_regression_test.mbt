@@ -590,3 +590,49 @@ test "demo catalog renders commands" {
 test "missing demo returns none" {
   assert_true(@moonsim.find_demo("nope") is None)
 }
+
+///|
+test "experiment aggregates model summaries" {
+  let report = @moonsim.first_prize_experiment()
+  assert_eq(report.case_count(), 3)
+  assert_true(report.total_events() > 0)
+  assert_true(report.max_final_tick() > 0)
+}
+
+///|
+test "experiment combined digest is stable" {
+  let left = @moonsim.first_prize_experiment()
+  let right = @moonsim.first_prize_experiment()
+  assert_eq(left.combined_digest(), right.combined_digest())
+}
+
+///|
+test "experiment render includes notes" {
+  let text = @moonsim.first_prize_experiment().render()
+  assert_true(text.contains("moonsim first-prize demo"))
+  assert_true(text.contains("deterministic backoff"))
+}
+
+///|
+test "experiment comparison matches identical reports" {
+  let left = @moonsim.first_prize_experiment()
+  let right = @moonsim.first_prize_experiment()
+  assert_eq(@moonsim.compare_experiments(left, right).matched, true)
+}
+
+///|
+test "experiment comparison detects changed cases" {
+  let left = @moonsim.first_prize_experiment()
+  let right = @moonsim.ExperimentReport::new("small")
+    .add(@moonsim.experiment_case(
+      "queue",
+      @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1))),
+    ))
+  assert_eq(@moonsim.compare_experiments(left, right).matched, false)
+}
+
+///|
+test "render experiment report delegates to report render" {
+  let text = @moonsim.render_experiment_report(@moonsim.first_prize_experiment())
+  assert_true(text.contains("# Experiment"))
+}
