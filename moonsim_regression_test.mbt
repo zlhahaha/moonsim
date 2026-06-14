@@ -636,3 +636,57 @@ test "render experiment report delegates to report render" {
   let text = @moonsim.render_experiment_report(@moonsim.first_prize_experiment())
   assert_true(text.contains("# Experiment"))
 }
+
+///|
+test "feature matrix includes demos and features" {
+  let matrix = @moonsim.build_feature_matrix()
+  assert_true(matrix.demos.length() >= 7)
+  assert_true(matrix.features.length() >= 9)
+  assert_true(matrix.cells.length() >= matrix.demos.length() * matrix.features.length())
+}
+
+///|
+test "feature matrix supports known feature" {
+  let matrix = @moonsim.build_feature_matrix()
+  assert_eq(matrix.supports("game_loop", "snapshot"), true)
+  assert_eq(matrix.supports("queue", "snapshot"), false)
+}
+
+///|
+test "feature matrix counts demo features" {
+  let matrix = @moonsim.build_feature_matrix()
+  assert_true(matrix.feature_count("protocol") >= 3)
+}
+
+///|
+test "feature matrix counts demos by feature" {
+  let matrix = @moonsim.build_feature_matrix()
+  assert_true(matrix.demo_count_for_feature("metrics") >= 2)
+}
+
+///|
+test "feature matrix renders readable report" {
+  let text = @moonsim.render_feature_matrix()
+  assert_true(text.contains("# Feature Matrix"))
+  assert_true(text.contains("game_loop"))
+}
+
+///|
+test "feature coverage counts supported cells" {
+  let coverage = @moonsim.build_feature_matrix().coverage()
+  assert_true(coverage.supported_cells > 0)
+  assert_true(coverage.total_cells >= coverage.supported_cells)
+}
+
+///|
+test "feature coverage percent is bounded" {
+  let percent = @moonsim.build_feature_matrix().coverage().percent()
+  assert_true(percent >= 0)
+  assert_true(percent <= 100)
+}
+
+///|
+test "feature coverage renders one line" {
+  let line = @moonsim.render_feature_coverage()
+  assert_true(line.contains("coverage="))
+}
