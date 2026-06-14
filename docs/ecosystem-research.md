@@ -180,7 +180,7 @@ Risk: High implementation complexity and harder demo story unless the project is
 
 Recommendation: Possible if the goal is a compiler-focused entry, but not the best default choice.
 
-## Ranking
+## Comparison Summary
 
 | Rank | Direction | Collision Risk | Implementation Risk | Reuse Value | Recommendation |
 | --- | --- | --- | --- | --- | --- |

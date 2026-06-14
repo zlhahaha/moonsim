@@ -88,7 +88,7 @@ pub fn demo_catalog() -> Array[DemoDescriptor] {
     demo_descriptor(
       "sweep",
       "moon run examples/sweep",
-      "parameter sweep and model ranking report",
+      "parameter sweep and model comparison report",
       ["reports", "metrics", "digest"],
     ),
     demo_descriptor(

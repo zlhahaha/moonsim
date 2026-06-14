@@ -1055,7 +1055,7 @@ test "token bucket refills and rejects deterministically" {
 }
 
 ///|
-test "sweep report ranks by score and digest is stable" {
+test "sweep report compares scores and digest is stable" {
   let report = @moonsim.sweep_load_balancer_strategies(seed=808UL, jobs=12)
   assert_eq(report.count(), 3)
   assert_true(report.best_by_score() is Some(_))

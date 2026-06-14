@@ -81,7 +81,7 @@ worker scheduling strategies, and resilience policies.
 
 ## Current Status
 
-- 170+ tests.
+- 190+ tests.
 - No runtime dependency beyond MoonBit core.
 - Deterministic scheduler, RNG, trace/replay, metrics, scenarios, snapshots,
   model helpers, validation, reports, and examples.
