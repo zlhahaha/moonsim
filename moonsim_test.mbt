@@ -560,3 +560,44 @@ test "state machine keeps history" {
   assert_eq(machine.history().length(), 2)
   assert_eq(machine.history()[1].accepted, false)
 }
+
+///|
+test "message bus schedules delayed delivery" {
+  let sim = @moonsim.Sim::new()
+  let bus = @moonsim.MessageBus::new()
+  let id = bus.send(sim, "a", "b", "hello", delay=3)
+  assert_eq(id, 1)
+  assert_eq(bus.pending(sim), 1)
+  ignore(sim.run_until_tick(3))
+  assert_eq(bus.deliver_due(sim), 1)
+  assert_eq(sim.metrics().counter("messages_delivered"), 1)
+}
+
+///|
+test "message bus can drop messages" {
+  let sim = @moonsim.Sim::new()
+  let bus = @moonsim.MessageBus::new()
+  let id = bus.send(sim, "a", "b", "hello", delay=3)
+  assert_eq(bus.drop(sim, id), true)
+  assert_eq(bus.drop(sim, id), false)
+  ignore(sim.run_until_idle())
+  assert_eq(bus.deliver_due(sim), 0)
+  assert_eq(sim.metrics().counter("messages_dropped"), 1)
+}
+
+///|
+test "message bus records trace entries" {
+  let sim = @moonsim.Sim::new()
+  let bus = @moonsim.MessageBus::new()
+  ignore(bus.send(sim, "client", "server", "ping"))
+  assert_true(sim.trace_text().contains("message.send"))
+}
+
+///|
+test "message bus exposes message snapshot" {
+  let sim = @moonsim.Sim::new()
+  let bus = @moonsim.MessageBus::new()
+  ignore(bus.send(sim, "n1", "n2", "m1"))
+  ignore(bus.send(sim, "n2", "n1", "m2"))
+  assert_eq(bus.messages().length(), 2)
+}
