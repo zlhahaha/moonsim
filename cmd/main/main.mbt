@@ -1,5 +1,7 @@
 ///|
 fn main {
+  println(@moonsim.render_demo_catalog())
+  println("")
   let sim = @moonsim.Sim::new(seed=2026UL)
   ignore(sim.schedule_after(0, "request:start"))
   ignore(sim.schedule_after(2, "request:fail"))

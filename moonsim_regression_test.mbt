@@ -534,3 +534,59 @@ test "report renders model summaries" {
   assert_true(text.contains("Model Summaries"))
   assert_true(text.contains("retry tick="))
 }
+
+///|
+test "validation passes clean sim" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "a"))
+  assert_eq(sim.validate().passed(), true)
+}
+
+///|
+test "validation trace catches negative tick" {
+  let report = @moonsim.validate_trace([@moonsim.trace_entry(-1, 0, "x", "y")])
+  assert_eq(report.passed(), false)
+  assert_true(report.text().contains("negative-trace-tick"))
+}
+
+///|
+test "validation metrics catches empty counter name" {
+  let metrics = @moonsim.Metrics::new()
+  metrics.inc("")
+  let report = @moonsim.validate_metrics(metrics)
+  assert_eq(report.passed(), false)
+  assert_true(report.summary().contains("FAIL metrics"))
+}
+
+///|
+test "validation report text lists issues" {
+  let issue = @moonsim.validation_issue("code", "message", severity="warn")
+  let report : @moonsim.ValidationReport = { subject: "x", issues: [issue] }
+  assert_true(report.text().contains("warn code"))
+}
+
+///|
+test "demo catalog includes first prize examples" {
+  let names = @moonsim.demo_names()
+  assert_true(names.length() >= 7)
+  assert_true(@moonsim.find_demo("queue") is Some(_))
+}
+
+///|
+test "demo descriptor feature lookup works" {
+  let demo = @moonsim.find_demo("game_loop").unwrap()
+  assert_eq(demo.has_feature("snapshot"), true)
+  assert_eq(demo.has_feature("missing"), false)
+}
+
+///|
+test "demo catalog renders commands" {
+  let text = @moonsim.render_demo_catalog()
+  assert_true(text.contains("moon run examples/protocol"))
+  assert_true(text.contains("state-machine"))
+}
+
+///|
+test "missing demo returns none" {
+  assert_true(@moonsim.find_demo("nope") is None)
+}
