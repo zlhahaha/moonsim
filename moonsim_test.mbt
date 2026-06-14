@@ -178,3 +178,49 @@ test "custom counters are traced and snapshotted" {
   assert_eq(trace[0].kind, "metric.counter")
   assert_eq(trace[1].detail, "requests+=3")
 }
+
+///|
+test "time wrappers normalize and compare" {
+  let start = @moonsim.tick(-10)
+  let delta = @moonsim.duration(5)
+  let end = start.plus(delta)
+  assert_eq(start.to_int(), 0)
+  assert_eq(delta.to_int(), 5)
+  assert_eq(end.to_int(), 5)
+  assert_eq(end.diff(start).to_int(), 5)
+  assert_true(start.compare(end) < 0)
+}
+
+///|
+test "schedule typed tick and duration" {
+  let sim = @moonsim.Sim::new()
+  let a = sim.schedule_at_tick(@moonsim.tick(3), "typed-at")
+  let b = sim.schedule_after_duration(@moonsim.duration(5), "typed-after")
+  assert_eq(a.to_int(), 1)
+  assert_eq(b.to_int(), 2)
+  assert_eq(sim.run_until_idle(), 2)
+  assert_eq(sim.time(), 5)
+}
+
+///|
+test "repeating events reschedule fixed number of times" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_repeating(1, 3, 4, "heartbeat"))
+  let report = sim.run_report_until_idle()
+  assert_eq(report.steps, 4)
+  assert_eq(report.final_tick, 10)
+  assert_eq(report.pending, 0)
+  assert_true(report.reason is @moonsim.RunStopReason::Idle)
+}
+
+///|
+test "run until tick stops before future event" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(2, "inside"))
+  ignore(sim.schedule_after(9, "outside"))
+  let report = sim.run_until_tick(5)
+  assert_eq(report.steps, 1)
+  assert_eq(report.final_tick, 2)
+  assert_eq(report.pending, 1)
+  assert_true(report.reason is @moonsim.RunStopReason::TickLimit)
+}

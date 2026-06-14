@@ -9,6 +9,8 @@ pub(all) struct ScheduledEvent {
   priority : Int
   name : String
   mut cancelled : Bool
+  repeat_every : Int
+  remaining_runs : Int
 }
 
 ///|
@@ -18,7 +20,35 @@ pub fn ScheduledEvent::new(
   name : String,
   priority? : Int = 0
 ) -> ScheduledEvent {
-  { id, tick, priority, name, cancelled: false }
+  {
+    id,
+    tick,
+    priority,
+    name,
+    cancelled: false,
+    repeat_every: 0,
+    remaining_runs: 1,
+  }
+}
+
+///|
+pub fn ScheduledEvent::repeating(
+  id : Int,
+  tick : Int,
+  name : String,
+  every : Int,
+  times : Int,
+  priority? : Int = 0
+) -> ScheduledEvent {
+  {
+    id,
+    tick,
+    priority,
+    name,
+    cancelled: false,
+    repeat_every: if every < 1 { 1 } else { every },
+    remaining_runs: if times < 1 { 1 } else { times },
+  }
 }
 
 ///|
@@ -29,6 +59,24 @@ pub fn ScheduledEvent::is_cancelled(self : ScheduledEvent) -> Bool {
 ///|
 pub fn ScheduledEvent::cancel(self : ScheduledEvent) -> Unit {
   self.cancelled = true
+}
+
+///|
+pub fn ScheduledEvent::is_repeating(self : ScheduledEvent) -> Bool {
+  self.repeat_every > 0 && self.remaining_runs > 1
+}
+
+///|
+pub fn ScheduledEvent::next_repeat(self : ScheduledEvent) -> ScheduledEvent {
+  {
+    id: self.id,
+    tick: self.tick + self.repeat_every,
+    priority: self.priority,
+    name: self.name,
+    cancelled: false,
+    repeat_every: self.repeat_every,
+    remaining_runs: self.remaining_runs - 1,
+  }
 }
 
 ///|

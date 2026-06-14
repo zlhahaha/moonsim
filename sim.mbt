@@ -10,6 +10,27 @@ pub(all) struct Sim {
 }
 
 ///|
+pub(all) enum RunStep {
+  Executed(ScheduledEvent)
+  Idle
+}
+
+///|
+pub(all) enum RunStopReason {
+  Idle
+  StepLimit
+  TickLimit
+}
+
+///|
+pub(all) struct RunReport {
+  steps : Int
+  final_tick : Int
+  pending : Int
+  reason : RunStopReason
+}
+
+///|
 pub fn Sim::new(seed? : UInt64 = 1UL) -> Sim {
   {
     now: 0,
@@ -27,6 +48,11 @@ pub fn Sim::time(self : Sim) -> Int {
 }
 
 ///|
+pub fn Sim::tick(self : Sim) -> Tick {
+  tick(self.now)
+}
+
+///|
 pub fn Sim::pending_count(self : Sim) -> Int {
   let mut count = 0
   for event in self.events {
@@ -35,6 +61,16 @@ pub fn Sim::pending_count(self : Sim) -> Int {
     }
   }
   count
+}
+
+///|
+pub fn Sim::schedule_at_tick(
+  self : Sim,
+  at : Tick,
+  name : String,
+  priority? : Int = 0
+) -> EventId {
+  event_id(self.schedule_at(at.to_int(), name, priority~))
 }
 
 ///|
@@ -53,6 +89,16 @@ pub fn Sim::schedule_at(
 }
 
 ///|
+pub fn Sim::schedule_after_duration(
+  self : Sim,
+  delay : Duration,
+  name : String,
+  priority? : Int = 0
+) -> EventId {
+  event_id(self.schedule_after(delay.to_int(), name, priority~))
+}
+
+///|
 pub fn Sim::schedule_after(
   self : Sim,
   delay : Int,
@@ -61,6 +107,23 @@ pub fn Sim::schedule_after(
 ) -> Int {
   let normalized_delay = if delay < 0 { 0 } else { delay }
   self.schedule_at(self.now + normalized_delay, name, priority~)
+}
+
+///|
+pub fn Sim::schedule_repeating(
+  self : Sim,
+  start_after : Int,
+  every : Int,
+  times : Int,
+  name : String,
+  priority? : Int = 0
+) -> Int {
+  let start = self.now + (if start_after < 0 { 0 } else { start_after })
+  let id = self.next_id
+  self.next_id += 1
+  self.events.push(ScheduledEvent::repeating(id, start, name, every, times, priority~))
+  self.record(id, "schedule.repeat", name)
+  id
 }
 
 ///|
@@ -87,8 +150,21 @@ pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
       self.now = event.tick
       self.record(event.id, "execute", event.name)
       self.metrics.inc("events_executed")
+      if event.is_repeating() {
+        let next = event.next_repeat()
+        self.events.push(next)
+        self.record(next.id, "reschedule.repeat", next.name)
+      }
       Some(event)
     }
+  }
+}
+
+///|
+pub fn Sim::step(self : Sim) -> RunStep {
+  match self.run_next() {
+    Some(event) => Executed(event)
+    None => Idle
   }
 }
 
@@ -102,6 +178,47 @@ pub fn Sim::run_until_idle(self : Sim, max_steps? : Int = 100000) -> Int {
     }
   }
   steps
+}
+
+///|
+pub fn Sim::run_report_until_idle(self : Sim, max_steps? : Int = 100000) -> RunReport {
+  let steps = self.run_until_idle(max_steps~)
+  {
+    steps,
+    final_tick: self.now,
+    pending: self.pending_count(),
+    reason: if self.pending_count() == 0 { RunStopReason::Idle } else { StepLimit },
+  }
+}
+
+///|
+pub fn Sim::run_until_tick(self : Sim, tick_limit : Int, max_steps? : Int = 100000) -> RunReport {
+  let mut steps = 0
+  while steps < max_steps {
+    let index = self.next_event_index()
+    match index {
+      None =>
+        return {
+          steps,
+          final_tick: self.now,
+          pending: self.pending_count(),
+          reason: RunStopReason::Idle,
+        }
+      Some(i) =>
+        if self.events[i].tick > tick_limit {
+          return {
+            steps,
+            final_tick: self.now,
+            pending: self.pending_count(),
+            reason: RunStopReason::TickLimit,
+          }
+        } else {
+          ignore(self.run_next())
+          steps += 1
+        }
+    }
+  }
+  { steps, final_tick: self.now, pending: self.pending_count(), reason: StepLimit }
 }
 
 ///|
