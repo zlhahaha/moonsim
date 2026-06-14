@@ -4,7 +4,7 @@ This roadmap tracks the initial work for the MoonBit OSC2026 project.
 
 ## Phase 0: Topic Confirmation
 
-Status: pending user confirmation
+Status: complete
 
 Tasks:
 
@@ -22,7 +22,7 @@ Acceptance criteria:
 
 ## Phase 1: MoonBit Project Skeleton
 
-Status: pending
+Status: complete
 
 Tasks:
 
@@ -42,7 +42,7 @@ Acceptance criteria:
 
 ## Phase 2: Deterministic Kernel
 
-Status: pending
+Status: complete
 
 Tasks:
 
@@ -63,7 +63,7 @@ Acceptance criteria:
 
 ## Phase 3: Trace, Replay, And Metrics
 
-Status: pending
+Status: complete
 
 Tasks:
 
@@ -81,7 +81,7 @@ Acceptance criteria:
 
 ## Phase 4: Scenario Helpers
 
-Status: pending
+Status: partial
 
 Tasks:
 
@@ -97,7 +97,7 @@ Acceptance criteria:
 
 ## Phase 5: Examples And CLI
 
-Status: pending
+Status: partial
 
 Tasks:
 
@@ -115,7 +115,7 @@ Acceptance criteria:
 
 ## Phase 6: Competition Polish
 
-Status: pending
+Status: partial
 
 Tasks:
 

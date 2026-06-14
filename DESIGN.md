@@ -17,9 +17,17 @@ trace of what happened.
 
 ## Current Scope
 
-The first implementation milestone starts with a standard MoonBit library and a
-CLI entry point. Later milestones add deterministic RNG, virtual time, event
-scheduling, trace recording, replay checks, metrics, examples, and docs.
+The first implementation milestone provides:
+
+- virtual simulation time as integer ticks
+- deterministic event scheduling
+- stable ordering for same-tick events
+- cancellation and idle running
+- seeded RNG
+- trace entries
+- deterministic trace digest
+- simple counters
+- CLI and example packages
 
 ## Non-Goals
 
@@ -35,3 +43,30 @@ The initial ecosystem research did not find a mature generic MoonBit
 deterministic simulation framework. Existing projects contain domain-specific
 simulation code, while `moonsim` provides a reusable kernel that other MoonBit
 projects can build on.
+
+The project deliberately avoids direct overlap with mature MoonBit Markdown,
+template, graph/pathfinding, collections, and tracing libraries found during
+ecosystem research. Its independent contribution is a small deterministic
+runtime kernel for reproducible model tests and examples.
+
+## Public API
+
+The core API is intentionally small:
+
+- `Sim` owns virtual time, pending events, RNG, trace, and metrics.
+- `ScheduledEvent` is the deterministic event record.
+- `Rng` provides reproducible random draws.
+- `TraceEntry` records simulation actions.
+- `Metrics` tracks simulation counters.
+
+Detailed API notes live in `docs/api.md`.
+
+## Examples
+
+The repository includes:
+
+- a retry-style CLI demo in `cmd/main`
+- a queue simulation in `examples/queue`
+- a retry/backoff simulation in `examples/retry`
+
+Detailed example notes live in `docs/examples.md`.
