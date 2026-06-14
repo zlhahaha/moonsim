@@ -447,3 +447,90 @@ test "regression queue stats after execution has no pending" {
   ignore(sim.run_until_idle())
   assert_eq(sim.queue_stats().pending, 0)
 }
+
+///|
+test "model queue result is deterministic" {
+  let left = @moonsim.run_queue_model(@moonsim.queue_config())
+  let right = @moonsim.run_queue_model(@moonsim.queue_config())
+  assert_eq(left.digest, right.digest)
+  assert_eq(left.customers, 5)
+}
+
+///|
+test "model queue normalizes negative customers" {
+  let result = @moonsim.run_queue_model(@moonsim.queue_config(customers=-5))
+  assert_eq(result.customers, 0)
+  assert_eq(result.events_executed, 0)
+}
+
+///|
+test "model retry succeeds after configured failures" {
+  let result = @moonsim.run_retry_model(@moonsim.retry_config(fail_until=2))
+  assert_eq(result.success, true)
+  assert_eq(result.retries, 2)
+}
+
+///|
+test "model retry can exhaust attempts" {
+  let result = @moonsim.run_retry_model(@moonsim.retry_config(max_attempts=2, fail_until=5))
+  assert_eq(result.success, false)
+  assert_eq(result.attempts, 2)
+}
+
+///|
+test "model traffic produces configured cars" {
+  let result = @moonsim.run_traffic_model(@moonsim.traffic_config(cars=7))
+  assert_eq(result.cars, 7)
+  assert_true(result.events_executed > 0)
+}
+
+///|
+test "model summaries render stable lines" {
+  let queue = @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1)))
+  assert_true(queue.line().contains("queue tick="))
+}
+
+///|
+test "report renders metrics counters" {
+  let metrics = @moonsim.Metrics::new()
+  metrics.inc("events", delta=3)
+  let report = @moonsim.render_metrics_report(metrics)
+  assert_true(report.contains("counter events = 3"))
+}
+
+///|
+test "report renders trace stats" {
+  let trace = [@moonsim.trace_entry(0, 1, "schedule", "a")]
+  let report = @moonsim.render_trace_report(trace)
+  assert_true(report.contains("# Trace"))
+  assert_true(report.contains("schedules=1"))
+}
+
+///|
+test "report renders sim summary" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(1, "a"))
+  let report = @moonsim.render_sim_report(sim, title="Demo")
+  assert_true(report.contains("# Demo"))
+  assert_true(report.contains("pending: 1"))
+}
+
+///|
+test "report renders scenario failure" {
+  let scenario = @moonsim.Scenario::new("bad").expect_counter("x", 1)
+  let report = scenario.verify(scenario.create_sim())
+  let text = @moonsim.render_scenario_report(report)
+  assert_true(text.contains("# Scenario bad"))
+  assert_true(text.contains("expected=1 actual=0"))
+}
+
+///|
+test "report renders model summaries" {
+  let summaries = [
+    @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1))),
+    @moonsim.retry_summary(@moonsim.run_retry_model(@moonsim.retry_config(fail_until=0))),
+  ]
+  let text = @moonsim.render_model_summaries(summaries)
+  assert_true(text.contains("Model Summaries"))
+  assert_true(text.contains("retry tick="))
+}
