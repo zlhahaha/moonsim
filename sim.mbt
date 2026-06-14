@@ -286,6 +286,18 @@ pub fn Sim::inc_counter(self : Sim, name : String, delta? : Int = 1) -> Unit {
 }
 
 ///|
+pub fn Sim::set_gauge(self : Sim, name : String, value : Int) -> Unit {
+  self.metrics.set_gauge(name, value)
+  self.record(0, "metric.gauge", name + "=" + value.to_string())
+}
+
+///|
+pub fn Sim::sample(self : Sim, name : String, value : Int) -> Unit {
+  self.metrics.sample(name, value)
+  self.record(0, "metric.sample", name + "=" + value.to_string())
+}
+
+///|
 fn Sim::record(self : Sim, event_id : Int, kind : String, detail : String) -> Unit {
   self.trace_entries.push(trace_entry(self.now, event_id, kind, detail))
 }

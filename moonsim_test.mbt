@@ -341,3 +341,46 @@ test "trace comparison summary is human readable" {
   let summary = @moonsim.compare_traces(left, right).summary()
   assert_true(summary.contains("mismatch index=0"))
 }
+
+///|
+test "gauges keep latest value" {
+  let metrics = @moonsim.Metrics::new()
+  metrics.set_gauge("queue_depth", 3)
+  metrics.set_gauge("queue_depth", 1)
+  assert_eq(metrics.gauge("queue_depth"), 1)
+  assert_eq(metrics.gauge("missing"), 0)
+}
+
+///|
+test "samples produce histogram summary" {
+  let metrics = @moonsim.Metrics::new()
+  metrics.sample("latency", 5)
+  metrics.sample("latency", 9)
+  metrics.sample("latency", 1)
+  let summary = metrics.summary("latency")
+  assert_eq(summary.count, 3)
+  assert_eq(summary.min, 1)
+  assert_eq(summary.max, 9)
+  assert_eq(summary.sum, 15)
+  assert_eq(summary.average(), 5.0)
+}
+
+///|
+test "sim gauge and sample are traced" {
+  let sim = @moonsim.Sim::new()
+  sim.set_gauge("depth", 2)
+  sim.sample("wait", 7)
+  assert_eq(sim.metrics().gauge("depth"), 2)
+  assert_eq(sim.metrics().sample_count("wait"), 1)
+  assert_eq(sim.trace()[0].kind, "metric.gauge")
+  assert_eq(sim.trace()[1].kind, "metric.sample")
+}
+
+///|
+test "metric counter delta compares snapshots" {
+  let before = @moonsim.Metrics::new()
+  before.inc("requests", delta=2)
+  let after = @moonsim.Metrics::new()
+  after.inc("requests", delta=5)
+  assert_eq(@moonsim.metrics_counter_delta(before, after, "requests"), 3)
+}
