@@ -98,3 +98,28 @@ test "run until idle respects max steps" {
   assert_eq(sim.run_until_idle(max_steps=1), 1)
   assert_eq(sim.pending_count(), 1)
 }
+
+///|
+test "trace records scheduling cancellation execution and rng" {
+  let sim = @moonsim.Sim::new(seed=123UL)
+  let dropped = sim.schedule_after(1, "drop")
+  ignore(sim.schedule_after(2, "run"))
+  ignore(sim.cancel(dropped))
+  ignore(sim.next_int(10))
+  ignore(sim.run_until_idle())
+
+  let trace = sim.trace()
+  assert_eq(trace.length(), 5)
+  assert_eq(trace[0].kind, "schedule")
+  assert_eq(trace[1].kind, "schedule")
+  assert_eq(trace[2].kind, "cancel")
+  assert_eq(trace[3].kind, "rng.int")
+  assert_eq(trace[4].kind, "execute")
+  assert_eq(trace[4].tick, 2)
+}
+
+///|
+test "trace entry formats useful text" {
+  let entry = @moonsim.trace_entry(3, 9, "execute", "job")
+  assert_eq(entry.format(), "tick=3 event=9 kind=execute detail=job")
+}

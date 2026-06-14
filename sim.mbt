@@ -4,12 +4,13 @@ pub(all) struct Sim {
   mut now : Int
   mut next_id : Int
   mut events : Array[ScheduledEvent]
+  mut trace_entries : Array[TraceEntry]
   rng : Rng
 }
 
 ///|
 pub fn Sim::new(seed? : UInt64 = 1UL) -> Sim {
-  { now: 0, next_id: 1, events: [], rng: Rng::new(seed) }
+  { now: 0, next_id: 1, events: [], trace_entries: [], rng: Rng::new(seed) }
 }
 
 ///|
@@ -39,6 +40,7 @@ pub fn Sim::schedule_at(
   let id = self.next_id
   self.next_id += 1
   self.events.push(ScheduledEvent::new(id, scheduled_tick, name, priority~))
+  self.record(id, "schedule", name)
   id
 }
 
@@ -59,6 +61,7 @@ pub fn Sim::cancel(self : Sim, event_id : Int) -> Bool {
   while i < self.events.length() {
     if self.events[i].id == event_id && !self.events[i].cancelled {
       self.events[i].cancel()
+      self.record(event_id, "cancel", self.events[i].name)
       return true
     }
     i += 1
@@ -74,6 +77,7 @@ pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
     Some(i) => {
       let event = self.events.remove(i)
       self.now = event.tick
+      self.record(event.id, "execute", event.name)
       Some(event)
     }
   }
@@ -93,7 +97,19 @@ pub fn Sim::run_until_idle(self : Sim, max_steps? : Int = 100000) -> Int {
 
 ///|
 pub fn Sim::next_int(self : Sim, bound : Int) -> Int {
-  self.rng.next_int(bound)
+  let value = self.rng.next_int(bound)
+  self.record(0, "rng.int", value.to_string())
+  value
+}
+
+///|
+pub fn Sim::trace(self : Sim) -> Array[TraceEntry] {
+  self.trace_entries.copy()
+}
+
+///|
+fn Sim::record(self : Sim, event_id : Int, kind : String, detail : String) -> Unit {
+  self.trace_entries.push(trace_entry(self.now, event_id, kind, detail))
 }
 
 ///|
