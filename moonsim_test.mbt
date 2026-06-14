@@ -37,3 +37,31 @@ test "event cancellation flag is mutable" {
   event.cancel()
   assert_eq(event.is_cancelled(), true)
 }
+
+///|
+test "scheduler executes by tick then insertion id" {
+  let sim = @moonsim.Sim::new(seed=42UL)
+  let third = sim.schedule_after(10, "third")
+  let first = sim.schedule_after(1, "first")
+  let second = sim.schedule_after(1, "second")
+  assert_eq(third, 1)
+  assert_eq(first, 2)
+  assert_eq(second, 3)
+
+  let first_event = sim.run_next().unwrap()
+  let second_event = sim.run_next().unwrap()
+  let third_event = sim.run_next().unwrap()
+  assert_eq(first_event.name, "first")
+  assert_eq(second_event.name, "second")
+  assert_eq(third_event.name, "third")
+  assert_eq(sim.time(), 10)
+}
+
+///|
+test "scheduler honors priority within same tick" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_at(5, "normal"))
+  ignore(sim.schedule_at(5, "urgent", priority=-10))
+  let event = sim.run_next().unwrap()
+  assert_eq(event.name, "urgent")
+}
