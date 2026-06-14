@@ -224,3 +224,70 @@ test "run until tick stops before future event" {
   assert_eq(report.pending, 1)
   assert_true(report.reason is @moonsim.RunStopReason::TickLimit)
 }
+
+///|
+test "rng range is bounded and reproducible" {
+  let left = @moonsim.Rng::new(7UL)
+  let right = @moonsim.Rng::new(7UL)
+  let a = left.next_range(10, 20)
+  let b = right.next_range(10, 20)
+  assert_eq(a, b)
+  assert_true(a >= 10 && a < 20)
+  assert_eq(left.next_range(5, 5), 5)
+}
+
+///|
+test "rng choose returns stable option" {
+  let left = @moonsim.Rng::new(8UL)
+  let right = @moonsim.Rng::new(8UL)
+  let items = ["a", "b", "c"]
+  assert_true(left.choose(items) == right.choose(items))
+  let empty : Array[String] = []
+  assert_true(left.choose(empty) is None)
+}
+
+///|
+test "rng shuffle is reproducible" {
+  let left = @moonsim.Rng::new(9UL)
+  let right = @moonsim.Rng::new(9UL)
+  let items = [1, 2, 3, 4, 5]
+  let a = left.shuffle(items)
+  let b = right.shuffle(items)
+  assert_eq(a.length(), b.length())
+  for i in 0..<a.length() {
+    assert_eq(a[i], b[i])
+  }
+}
+
+///|
+test "weighted choice ignores zero total" {
+  let rng = @moonsim.Rng::new(1UL)
+  let choices = [@moonsim.weighted_choice("never", 0)]
+  assert_true(rng.choose_weighted(choices) is None)
+}
+
+///|
+test "weighted choice returns reproducible label" {
+  let left = @moonsim.Rng::new(10UL)
+  let right = @moonsim.Rng::new(10UL)
+  let choices = [
+    @moonsim.weighted_choice("low", 1),
+    @moonsim.weighted_choice("high", 9),
+  ]
+  assert_true(left.choose_weighted(choices) == right.choose_weighted(choices))
+}
+
+///|
+test "sim rng helpers are traced" {
+  let sim = @moonsim.Sim::new(seed=11UL)
+  ignore(sim.next_range(1, 3))
+  ignore(sim.choose("letter", ["x", "y"]))
+  ignore(sim.shuffle("numbers", [1, 2, 3]))
+  ignore(sim.choose_weighted("route", [@moonsim.weighted_choice("a", 1)]))
+  let trace = sim.trace()
+  assert_eq(trace.length(), 4)
+  assert_eq(trace[0].kind, "rng.range")
+  assert_eq(trace[1].kind, "rng.choose")
+  assert_eq(trace[2].kind, "rng.shuffle")
+  assert_eq(trace[3].kind, "rng.weighted")
+}

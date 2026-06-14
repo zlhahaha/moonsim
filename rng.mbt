@@ -41,3 +41,67 @@ pub fn Rng::next_int(self : Rng, bound : Int) -> Int {
 pub fn Rng::next_bool(self : Rng) -> Bool {
   (self.next_u64() & 1UL) == 1UL
 }
+
+///|
+pub fn Rng::next_range(self : Rng, low : Int, high : Int) -> Int {
+  if high <= low {
+    low
+  } else {
+    low + self.next_int(high - low)
+  }
+}
+
+///|
+pub fn[T] Rng::choose(self : Rng, items : Array[T]) -> T? {
+  if items.length() == 0 {
+    None
+  } else {
+    Some(items[self.next_int(items.length())])
+  }
+}
+
+///|
+pub fn[T] Rng::shuffle(self : Rng, items : Array[T]) -> Array[T] {
+  let shuffled = items.copy()
+  let mut i = shuffled.length() - 1
+  while i > 0 {
+    let j = self.next_int(i + 1)
+    let tmp = shuffled[i]
+    shuffled[i] = shuffled[j]
+    shuffled[j] = tmp
+    i -= 1
+  }
+  shuffled
+}
+
+///|
+pub(all) struct WeightedChoice {
+  label : String
+  weight : Int
+}
+
+///|
+pub fn weighted_choice(label : String, weight : Int) -> WeightedChoice {
+  { label, weight: if weight < 0 { 0 } else { weight } }
+}
+
+///|
+pub fn Rng::choose_weighted(self : Rng, choices : Array[WeightedChoice]) -> String? {
+  let mut total = 0
+  for choice in choices {
+    total += choice.weight
+  }
+  if total <= 0 {
+    None
+  } else {
+    let ticket = self.next_int(total)
+    let mut cursor = 0
+    for choice in choices {
+      cursor += choice.weight
+      if ticket < cursor {
+        return Some(choice.label)
+      }
+    }
+    None
+  }
+}

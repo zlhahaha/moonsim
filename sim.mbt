@@ -229,6 +229,37 @@ pub fn Sim::next_int(self : Sim, bound : Int) -> Int {
 }
 
 ///|
+pub fn Sim::next_range(self : Sim, low : Int, high : Int) -> Int {
+  let value = self.rng.next_range(low, high)
+  self.record(0, "rng.range", low.to_string() + ".." + high.to_string() + "=" + value.to_string())
+  value
+}
+
+///|
+pub fn[T] Sim::choose(self : Sim, label : String, items : Array[T]) -> T? {
+  let index = if items.length() == 0 { -1 } else { self.rng.next_int(items.length()) }
+  self.record(0, "rng.choose", label + "=" + index.to_string())
+  if index < 0 { None } else { Some(items[index]) }
+}
+
+///|
+pub fn[T] Sim::shuffle(self : Sim, label : String, items : Array[T]) -> Array[T] {
+  let result = self.rng.shuffle(items)
+  self.record(0, "rng.shuffle", label + "#" + items.length().to_string())
+  result
+}
+
+///|
+pub fn Sim::choose_weighted(self : Sim, label : String, choices : Array[WeightedChoice]) -> String? {
+  let value = self.rng.choose_weighted(choices)
+  match value {
+    None => self.record(0, "rng.weighted", label + "=None")
+    Some(v) => self.record(0, "rng.weighted", label + "=" + v)
+  }
+  value
+}
+
+///|
 pub fn Sim::trace(self : Sim) -> Array[TraceEntry] {
   self.trace_entries.copy()
 }
