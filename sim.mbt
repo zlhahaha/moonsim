@@ -265,6 +265,11 @@ pub fn Sim::trace(self : Sim) -> Array[TraceEntry] {
 }
 
 ///|
+pub fn Sim::trace_text(self : Sim) -> String {
+  trace_to_text(self.trace_entries)
+}
+
+///|
 pub fn Sim::digest(self : Sim) -> UInt64 {
   trace_digest(self.trace_entries)
 }

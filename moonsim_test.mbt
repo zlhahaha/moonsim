@@ -291,3 +291,53 @@ test "sim rng helpers are traced" {
   assert_eq(trace[2].kind, "rng.shuffle")
   assert_eq(trace[3].kind, "rng.weighted")
 }
+
+///|
+test "trace text exports stable line format" {
+  let sim = @moonsim.Sim::new()
+  ignore(sim.schedule_after(2, "hello"))
+  let text = sim.trace_text()
+  assert_eq(text, "0|1|schedule|hello")
+}
+
+///|
+test "trace comparison matches identical traces" {
+  let left = @moonsim.Sim::new(seed=1UL)
+  ignore(left.schedule_after(1, "a"))
+  ignore(left.run_until_idle())
+  let right = @moonsim.Sim::new(seed=1UL)
+  ignore(right.schedule_after(1, "a"))
+  ignore(right.run_until_idle())
+  let comparison = @moonsim.compare_traces(left.trace(), right.trace())
+  assert_eq(comparison.matched, true)
+  assert_eq(comparison.checked, left.trace().length())
+  assert_true(comparison.mismatch is None)
+}
+
+///|
+test "trace comparison reports changed entry" {
+  let left = [@moonsim.trace_entry(0, 1, "schedule", "a")]
+  let right = [@moonsim.trace_entry(0, 1, "schedule", "b")]
+  let comparison = @moonsim.compare_traces(left, right)
+  assert_eq(comparison.matched, false)
+  let mismatch = comparison.mismatch.unwrap()
+  assert_eq(mismatch.index, 0)
+  assert_eq(mismatch.reason, "entry differs")
+}
+
+///|
+test "trace comparison reports length mismatch" {
+  let left = [@moonsim.trace_entry(0, 1, "schedule", "a")]
+  let right : Array[@moonsim.TraceEntry] = []
+  let comparison = @moonsim.compare_traces(left, right)
+  assert_eq(comparison.matched, false)
+  assert_eq(comparison.mismatch.unwrap().reason, "length differs")
+}
+
+///|
+test "trace comparison summary is human readable" {
+  let left = [@moonsim.trace_entry(0, 1, "schedule", "a")]
+  let right = [@moonsim.trace_entry(0, 1, "schedule", "b")]
+  let summary = @moonsim.compare_traces(left, right).summary()
+  assert_true(summary.contains("mismatch index=0"))
+}
