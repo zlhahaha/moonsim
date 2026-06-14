@@ -24,10 +24,13 @@ The current implementation provides:
 - cancellation, idle running, and run limits
 - seeded RNG and simple distributions
 - trace entries and deterministic trace digests
-- counters, gauges, samples, and summaries
-- scenario assertions and reports
+- trace queries, replay baselines, and structured comparisons
+- counters, gauges, samples, summaries, distributions, and diffs
+- scenario assertions, suites, and reports
 - snapshots, restore, and fork comparison
-- timer, backoff, state-machine, and message helpers
+- timer, backoff, state-machine, message, network, load-balancer, and
+  resilience helpers
+- workflow, sweep, seed-matrix, timeline, and invariant helpers
 - CLI and example packages
 
 ## Non-Goals
@@ -72,5 +75,11 @@ The repository includes:
 - a game-loop fork comparison in `examples/game_loop`
 - a message protocol simulation in `examples/protocol`
 - an order state-machine simulation in `examples/order_state`
+- a network delivery and retry simulation in `examples/network`
+- a load-balancer scheduling simulation in `examples/load_balancer`
+- a resilience simulation in `examples/resilience`
+- a workflow simulation in `examples/workflow`
+- a sweep simulation in `examples/sweep`
+- a seed matrix simulation in `examples/seed_matrix`
 
 Detailed example notes live in `docs/examples.md`.

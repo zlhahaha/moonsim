@@ -81,8 +81,8 @@ pub fn ExperimentReport::render(self : ExperimentReport) -> String {
 }
 
 ///|
-pub fn first_prize_experiment() -> ExperimentReport {
-  ExperimentReport::new("moonsim first-prize demo")
+pub fn demo_experiment() -> ExperimentReport {
+  ExperimentReport::new("moonsim model demo")
     .add(experiment_case(
       "queue",
       queue_summary(run_queue_model(queue_config(customers=5))),
@@ -97,6 +97,26 @@ pub fn first_prize_experiment() -> ExperimentReport {
       "traffic",
       traffic_summary(run_traffic_model(traffic_config(cars=12))),
       notes="timer and sample metrics",
+    ))
+    .add(experiment_case(
+      "network",
+      network_summary(run_network_model(network_config(messages=6))),
+      notes="message delivery and retry",
+    ))
+    .add(experiment_case(
+      "load_balancer",
+      load_balancer_summary(run_load_balancer_model(load_balancer_config(jobs=8))),
+      notes="worker scheduling model",
+    ))
+    .add(experiment_case(
+      "circuit_breaker",
+      run_circuit_breaker_model(calls=8).summary(),
+      notes="service protection model",
+    ))
+    .add(experiment_case(
+      "token_bucket",
+      run_token_bucket_model(requests=8).summary(),
+      notes="rate limiting model",
     ))
 }
 

@@ -24,6 +24,7 @@ pub fn default_features() -> Array[String] {
     "message",
     "state-machine",
     "digest",
+    "reports",
   ]
 }
 

@@ -20,10 +20,14 @@ sketches, and other workflows where reproducibility matters.
 - Stable event scheduling with delay, cancellation, and run limits.
 - Seeded random number generation for reproducible runs.
 - Trace recording, trace formatting, and deterministic digests.
-- Metrics for counters, gauges, samples, and summaries.
-- Scenario helpers for readable model tests.
+- Trace querying, replay baselines, and structured comparison reports.
+- Metrics for counters, gauges, samples, summaries, distributions, and diffs.
+- Scenario and scenario-suite helpers for readable model tests.
 - Snapshot, restore, and fork comparison helpers.
-- Reusable model helpers for timers, backoff, state machines, and messages.
+- Reusable model helpers for timers, backoff, state machines, messages,
+  network delivery, load balancing, circuit breakers, and token buckets.
+- Workflow scheduling, parameter sweeps, and invariant checks for model suites.
+- Multi-seed regression matrices for exploring deterministic variability.
 
 ## Quick Start
 
@@ -56,10 +60,17 @@ moon run examples/traffic
 moon run examples/game_loop
 moon run examples/protocol
 moon run examples/order_state
+moon run examples/network
+moon run examples/load_balancer
+moon run examples/resilience
+moon run examples/workflow
+moon run examples/sweep
+moon run examples/seed_matrix
 ```
 
 The examples cover queueing, retry/backoff, traffic lights, fixed-tick game
-loops, message delivery, and state-machine transitions.
+loops, message delivery, state-machine transitions, network retry behavior,
+worker scheduling strategies, and resilience policies.
 
 ## Documentation
 
@@ -70,7 +81,7 @@ loops, message delivery, and state-machine transitions.
 
 ## Current Status
 
-- 150+ tests.
+- 170+ tests.
 - No runtime dependency beyond MoonBit core.
 - Deterministic scheduler, RNG, trace/replay, metrics, scenarios, snapshots,
   model helpers, validation, reports, and examples.

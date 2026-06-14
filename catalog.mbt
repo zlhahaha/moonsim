@@ -61,6 +61,42 @@ pub fn demo_catalog() -> Array[DemoDescriptor] {
       "state-machine transition validation",
       ["state-machine", "trace", "metrics"],
     ),
+    demo_descriptor(
+      "network",
+      "moon run examples/network",
+      "deterministic network delivery and retry model",
+      ["message", "rng", "trace", "metrics", "digest"],
+    ),
+    demo_descriptor(
+      "load_balancer",
+      "moon run examples/load_balancer",
+      "multi-worker scheduling strategy comparison",
+      ["scheduler", "rng", "metrics", "digest", "reports"],
+    ),
+    demo_descriptor(
+      "resilience",
+      "moon run examples/resilience",
+      "circuit breaker and token bucket simulation",
+      ["scheduler", "rng", "metrics", "trace", "digest"],
+    ),
+    demo_descriptor(
+      "workflow",
+      "moon run examples/workflow",
+      "dependency-aware workflow scheduling model",
+      ["scheduler", "metrics", "digest", "reports"],
+    ),
+    demo_descriptor(
+      "sweep",
+      "moon run examples/sweep",
+      "parameter sweep and model ranking report",
+      ["reports", "metrics", "digest"],
+    ),
+    demo_descriptor(
+      "seed_matrix",
+      "moon run examples/seed_matrix",
+      "multi-seed deterministic regression matrix",
+      ["rng", "reports", "digest"],
+    ),
   ]
 }
 

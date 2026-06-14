@@ -46,14 +46,26 @@ Trace entries record deterministic actions:
 Use `TraceEntry::format()` for human-readable output and `trace_digest()` or
 `Sim::digest()` for regression checks.
 
+Trace utilities also support:
+
+- `query_trace(...)`: filter by kind, detail text, and tick range.
+- `TraceQueryResult::kind_count(...)`: count trace entries by kind.
+- `expect_trace_*`: assert trace count, detail, order, monotonic ticks, and digest.
+- `replay_baseline(...)` and `compare_replay(...)`: compare a later run against
+  an in-memory baseline of trace, counters, and gauges.
+
 ## Metrics
 
-Metrics currently support counters:
+Metrics support counters, gauges, samples, summaries, distributions, snapshots,
+and diffs:
 
 ```moonbit
 sim.inc_counter("requests")
 sim.inc_counter("bytes", delta=128)
 let requests = sim.metrics().counter("requests")
+let before = sim.metrics().metric_snapshot()
+sim.sample("latency", 7)
+let diff = sim.metrics().diff_from(before)
 ```
 
 The scheduler automatically increments `events_executed`.
@@ -63,9 +75,18 @@ The scheduler automatically increments `events_executed`.
 The library also includes:
 
 - `Scenario`: scenario assertions and readable failure reports.
+- `ScenarioSuite`: multi-scenario aggregation and suite reports.
 - `SimSnapshot`: checkpoint, restore, and fork comparison.
 - `Backoff` and `TimerPlan`: deterministic retry and interval helpers.
 - `StateMachine`: transition modeling and trace integration.
 - `MessageBus`: delayed message delivery and drop modeling.
 - `ValidationReport`: invariant checks for simulations, traces, and metrics.
 - `ExperimentReport`: model-suite reporting for demos and comparisons.
+- `run_network_model`: deterministic network delivery, drop, and retry model.
+- `run_load_balancer_model`: multi-worker scheduling strategy model.
+- `run_circuit_breaker_model`: service protection model.
+- `run_token_bucket_model`: deterministic rate limiting model.
+- `WorkflowPlan` and `run_workflow_model`: dependency-aware task scheduling.
+- `SweepReport`: compare deterministic model variants.
+- `InvariantReport`: aggregate reusable simulation invariants.
+- `SeedMatrix`: run deterministic model families across multiple seeds.

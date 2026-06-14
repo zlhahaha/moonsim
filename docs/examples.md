@@ -84,3 +84,58 @@ moon run examples/order_state
 
 Demonstrates state transitions, rejected events, transition trace records, and
 state-machine metrics.
+
+## Network Simulation
+
+```bash
+moon run examples/network
+```
+
+Demonstrates deterministic message latency, drops, retries, delivery metrics,
+and trace/digest reporting.
+
+## Load Balancer Simulation
+
+```bash
+moon run examples/load_balancer
+```
+
+Compares deterministic worker scheduling strategies such as least-queue and
+random assignment. Demonstrates seeded job arrivals, service-time samples,
+worker counters, total wait, final tick, and stable digests.
+
+## Resilience Simulation
+
+```bash
+moon run examples/resilience
+```
+
+Demonstrates circuit breaker behavior and token bucket rate limiting under
+deterministic request streams.
+
+## Workflow Simulation
+
+```bash
+moon run examples/workflow
+```
+
+Demonstrates dependency-aware task scheduling, worker assignment, critical path
+calculation, and deterministic workflow digests.
+
+## Sweep Simulation
+
+```bash
+moon run examples/sweep
+```
+
+Demonstrates parameter sweeps across model variants and stable digest reports
+for comparing deterministic runs.
+
+## Seed Matrix Simulation
+
+```bash
+moon run examples/seed_matrix
+```
+
+Demonstrates deterministic regression matrices over multiple seeds for retry,
+network, and scheduling-style models.
