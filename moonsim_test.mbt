@@ -517,3 +517,46 @@ test "schedule backoff records timer trace" {
   assert_eq(sim.trace()[0].kind, "timer.backoff")
   assert_eq(sim.pending_count(), 1)
 }
+
+///|
+test "state machine accepts configured transitions" {
+  let machine = @moonsim.StateMachine::new("order", "created")
+    .add(@moonsim.transition("created", "pay", "paid", action="charge"))
+    .add(@moonsim.transition("paid", "ship", "shipped"))
+  let paid = machine.send("pay")
+  let shipped = machine.send("ship")
+  assert_eq(paid.accepted, true)
+  assert_eq(paid.action, "charge")
+  assert_eq(shipped.to, "shipped")
+  assert_eq(machine.state(), "shipped")
+}
+
+///|
+test "state machine rejects unknown transition" {
+  let machine = @moonsim.StateMachine::new("login", "anonymous")
+  let result = machine.send("logout")
+  assert_eq(result.accepted, false)
+  assert_eq(result.reason, "no transition")
+  assert_eq(machine.state(), "anonymous")
+}
+
+///|
+test "state transition can be recorded in sim" {
+  let sim = @moonsim.Sim::new()
+  let machine = @moonsim.StateMachine::new("door", "closed")
+    .add(@moonsim.transition("closed", "open", "open"))
+  let result = machine.send("open")
+  sim.record_transition(machine, result)
+  assert_eq(sim.metrics().counter("state.accepted"), 1)
+  assert_eq(sim.trace()[0].kind, "state.transition")
+}
+
+///|
+test "state machine keeps history" {
+  let machine = @moonsim.StateMachine::new("door", "closed")
+    .add(@moonsim.transition("closed", "open", "open"))
+  ignore(machine.send("open"))
+  ignore(machine.send("lock"))
+  assert_eq(machine.history().length(), 2)
+  assert_eq(machine.history()[1].accepted, false)
+}
