@@ -40,6 +40,12 @@ Run the retry/backoff example:
 moon run examples/retry
 ```
 
+Run the traffic light example:
+
+```bash
+moon run examples/traffic
+```
+
 ## Competition Fit
 
 This project directly targets the recommended "Deterministic simulation

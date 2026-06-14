@@ -42,3 +42,18 @@ Demonstrates:
 - seeded jitter
 - counters for attempts, retries, and success
 - deterministic digest
+
+## Traffic Light Simulation
+
+```bash
+moon run examples/traffic
+```
+
+Models a cyclic traffic light and deterministic vehicle arrivals.
+
+Demonstrates:
+
+- repeating timer events
+- state-like phase changes
+- counters and sample summaries
+- deterministic digest
