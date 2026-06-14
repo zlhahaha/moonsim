@@ -433,3 +433,48 @@ test "scenario verifies gauge" {
   let report = scenario.verify(sim)
   assert_eq(report.passed, true)
 }
+
+///|
+test "snapshot captures and restores framework state" {
+  let sim = @moonsim.Sim::new(seed=123UL)
+  ignore(sim.schedule_after(5, "future"))
+  sim.inc_counter("ready", delta=2)
+  sim.set_gauge("depth", 4)
+  sim.sample("wait", 8)
+  let snapshot = sim.snapshot(name="before")
+  let restored = @moonsim.Sim::restore(snapshot)
+  assert_eq(restored.time(), 0)
+  assert_eq(restored.pending_count(), 1)
+  assert_eq(restored.metrics().counter("ready"), 2)
+  assert_eq(restored.metrics().gauge("depth"), 4)
+  assert_eq(restored.metrics().sample_count("wait"), 1)
+  assert_eq(restored.run_until_idle(), 1)
+}
+
+///|
+test "snapshot fork can branch simulations" {
+  let sim = @moonsim.Sim::new(seed=77UL)
+  ignore(sim.schedule_after(1, "base"))
+  let snapshot = sim.snapshot(name="branch")
+  let left = snapshot.fork("left")
+  let right = snapshot.fork("right")
+  ignore(left.schedule_after(2, "left-only"))
+  ignore(right.schedule_after(3, "right-only"))
+  ignore(left.run_until_idle())
+  ignore(right.run_until_idle())
+  let comparison = @moonsim.compare_forks("left", left, "right", right)
+  assert_eq(comparison.same_digest, false)
+  assert_eq(comparison.left_events, 2)
+  assert_eq(comparison.right_events, 2)
+  assert_true(comparison.summary().contains("forks different"))
+}
+
+///|
+test "restored rng continues deterministically" {
+  let sim = @moonsim.Sim::new(seed=88UL)
+  ignore(sim.next_int(100))
+  let snapshot = sim.snapshot(name="rng")
+  let left = @moonsim.Sim::restore(snapshot)
+  let right = @moonsim.Sim::restore(snapshot)
+  assert_eq(left.next_int(1000), right.next_int(1000))
+}
