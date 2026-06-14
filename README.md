@@ -22,6 +22,12 @@ Run the queue example:
 moon run examples/queue
 ```
 
+Run the retry/backoff example:
+
+```bash
+moon run examples/retry
+```
+
 ## Competition Fit
 
 This project directly targets the recommended "Deterministic simulation
