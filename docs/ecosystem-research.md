@@ -29,7 +29,7 @@ Search topics:
 - Benchmark / stopwatch
 - Logging / tracing
 - Protobuf / serialization
-- Actor framework
+- Actor/runtime tools
 - Deterministic simulation
 - IndexMap / BitSet / collection utilities
 - Build tool / n2 / ninja-like tool
@@ -133,12 +133,12 @@ Possible differentiation:
 
 Recommendation: Promising as a secondary option, but must be expanded beyond a stopwatch into a full benchmark harness to provide enough reusable value.
 
-### Deterministic Simulation
+### Deterministic Simulation And Model Testing
 
 Representative projects found:
 
-- No mature generic deterministic simulation framework was found in repository search.
-- Code search found domain-specific simulations inside games, EtherCAT, and other projects, but not a reusable simulation kernel.
+- No mature generic deterministic simulation and model testing toolkit was found in repository search.
+- Code search found domain-specific simulations and runtime experiments, but not a reusable model-testing toolkit built around scenario suites, metrics, snapshots, and trace/replay.
 
 Collision risk: Low.
 
@@ -147,9 +147,9 @@ Possible differentiation:
 - Generic virtual-time scheduler
 - Seeded deterministic RNG
 - Event queue and deterministic ordering
-- Scenario runner
-- Trace recording and replay
-- Snapshot/checkpoint support
+- Scenario and scenario-suite runner
+- Trace recording, replay, and stable digest comparison
+- Snapshot/checkpoint and fork comparison support
 - Model-test helpers for algorithms, queues, protocols, games, or distributed systems
 - CLI demo runner and report generator
 
@@ -184,7 +184,7 @@ Recommendation: Possible if the goal is a compiler-focused entry, but not the be
 
 | Rank | Direction | Collision Risk | Implementation Risk | Reuse Value | Recommendation |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Deterministic simulation framework | Low | Medium | High | Best candidate |
+| 1 | Deterministic simulation and model testing toolkit | Low | Medium | High | Best candidate |
 | 2 | Benchmark harness | Low | Medium | Medium | Good backup, must expand scope |
 | 3 | Build tool | Low | High | High | Interesting but risky |
 | 4 | Register allocation library | Medium | High | Medium | Only if compiler-focused |
@@ -199,7 +199,7 @@ Recommendation: Possible if the goal is a compiler-focused entry, but not the be
 
 Working title: `moonsim`
 
-A deterministic simulation and replay framework for MoonBit.
+A deterministic simulation and model testing toolkit for MoonBit.
 
 ### Core Problem
 
@@ -207,7 +207,7 @@ MoonBit projects need a reusable way to model systems that evolve over time whil
 
 ### Core Value
 
-`moonsim` would provide a small deterministic runtime kernel rather than a domain-specific simulator:
+`moonsim` would provide a small deterministic model-testing toolkit rather than a domain-specific simulator:
 
 - virtual clock instead of wall-clock time
 - deterministic event scheduling
@@ -215,12 +215,12 @@ MoonBit projects need a reusable way to model systems that evolve over time whil
 - seeded RNG
 - trace recording
 - replay verification
-- snapshot/checkpoint support
-- scenario runner and examples
+- snapshot/checkpoint and fork comparison support
+- scenario-suite runner, metrics, reports, and examples
 
 ### Why It Avoids Duplication
 
-Existing search results show domain-specific simulation code, but no generic MoonBit simulation framework. The project is not another Markdown parser, template engine, graph library, pathfinder, tracing library, or collection package.
+Existing search results show domain-specific simulation code and runtime experiments, but no generic MoonBit model-testing toolkit with this feature mix. The project is not another Markdown parser, template engine, graph library, pathfinder, tracing library, collection package, Actor framework, mailbox runtime, or backend concurrency lab.
 
 ### Expected Modules
 
@@ -236,17 +236,18 @@ Existing search results show domain-specific simulation code, but no generic Moo
 
 ### Differentiation
 
-If another project also chooses deterministic simulation, `moonsim` should stand out through:
+Compared with domain-specific simulations or concurrency-runtime experiments, `moonsim` should stand out through:
 
 - replayable traces and deterministic digests
-- clear library API plus CLI scenario runner
+- clear library API plus CLI scenario and suite runner
 - multiple real examples, not just a toy loop
-- strong tests for event ordering, cancellation, RNG reproducibility, replay, and snapshot behavior
+- strong tests for event ordering, cancellation, RNG reproducibility, replay, metrics, scenario suites, and snapshot behavior
+- clear non-goal around Actor/mailbox runtime semantics
 - documentation explaining how to use it for games, protocols, and algorithm experiments
 
 ## Next Steps
 
-1. Confirm the topic: `moonsim` deterministic simulation framework.
+1. Confirm the topic: `moonsim` deterministic simulation and model testing toolkit.
 2. Create a design document with API shape, module boundaries, and non-goals.
 3. Initialize a MoonBit project skeleton.
 4. Implement the minimal deterministic kernel first: virtual time, event queue, seeded RNG, and trace log.

@@ -1,10 +1,11 @@
 # moonsim
 
-Deterministic simulation, trace, and replay framework for MoonBit.
+Deterministic simulation and model testing toolkit for MoonBit.
 
-`moonsim` provides a reusable virtual-time simulation kernel for tests,
-model experiments, game logic, retry policies, queueing systems, protocol
-sketches, and other workflows where reproducibility matters.
+`moonsim` provides a reusable virtual-time toolkit for deterministic model
+tests. It helps MoonBit projects describe system behavior with scenarios,
+metrics, snapshots, traces, and reusable model helpers without depending on
+wall-clock timing or a specific concurrency runtime.
 
 ## Use Cases
 
@@ -13,6 +14,12 @@ sketches, and other workflows where reproducibility matters.
 - Replay game-loop or model decisions from the same seed.
 - Compare two strategies from the same checkpoint.
 - Produce stable traces, digests, and metrics for regression tests.
+
+## Focus
+
+`moonsim` is not an Actor framework or a backend concurrency runtime. Message
+delivery is one optional model helper; the main API is built around `Sim`,
+scenarios, metrics, snapshots, trace/replay, and reusable system models.
 
 ## Core Features
 
@@ -83,5 +90,5 @@ worker scheduling strategies, and resilience policies.
 
 - 190+ tests.
 - No runtime dependency beyond MoonBit core.
-- Deterministic scheduler, RNG, trace/replay, metrics, scenarios, snapshots,
-  model helpers, validation, reports, and examples.
+- Deterministic scheduler, RNG, trace/replay, metrics, scenario suites,
+  snapshots, model helpers, validation, reports, and examples.

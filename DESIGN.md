@@ -1,8 +1,9 @@
 # moonsim Design
 
-`moonsim` is a deterministic simulation, trace, and replay framework for
-MoonBit. It focuses on reusable infrastructure for model tests and experiments
-rather than a domain-specific simulator.
+`moonsim` is a deterministic simulation and model testing toolkit for MoonBit.
+It focuses on reusable infrastructure for scenario-based tests, metrics,
+snapshots, trace/replay, and model experiments rather than a domain-specific
+simulator or a concurrency runtime.
 
 ## Problem
 
@@ -40,13 +41,14 @@ The current implementation provides:
 - It is not a game engine.
 - It is not a logging or OpenTelemetry replacement.
 - It is not a benchmark harness.
+- It is not an Actor framework or mailbox runtime.
 
 ## Differentiation
 
-MoonBit projects may already contain domain-specific simulation code, but
-`moonsim` provides a reusable kernel that other projects can build on. Its
-independent contribution is a small deterministic runtime for reproducible
-model tests, traces, metrics, and examples.
+MoonBit projects may already contain domain-specific simulations or concurrency
+experiments. `moonsim` keeps a different boundary: the core API is `Sim`,
+scenario assertions, metrics, snapshots, trace/replay, and reusable model
+helpers. Message delivery is an optional helper, not the center of the design.
 
 The project deliberately keeps the core free of wall-clock and operating-system
 dependencies. This makes the behavior easier to verify and easier to reuse

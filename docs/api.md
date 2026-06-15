@@ -2,6 +2,10 @@
 
 This document describes the current public API shape.
 
+The API is centered on deterministic model tests rather than an Actor runtime:
+`Sim`, scenario suites, metrics, snapshots, and trace/replay are the primary
+surface.
+
 ## Simulation
 
 ```moonbit
