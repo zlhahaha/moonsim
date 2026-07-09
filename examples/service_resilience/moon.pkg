@@ -1,0 +1,7 @@
+import {
+  "zlhahaha/moonsim",
+}
+
+options(
+  "is-main": true,
+)

@@ -108,6 +108,8 @@ pub fn render_scenario_report(ScenarioReport) -> String
 
 pub fn render_scenario_suite_report(ScenarioSuiteReport) -> String
 
+pub fn render_service_resilience_report(ServiceResilienceResult) -> String
+
 pub fn render_sim_report(Sim, title? : String) -> String
 
 pub fn render_trace_report(Array[TraceEntry], limit? : Int) -> String
@@ -132,6 +134,8 @@ pub fn run_reliability_model(ReliabilityConfig) -> ReliabilityResult
 
 pub fn run_retry_model(RetryConfig) -> RetryResult
 
+pub fn run_service_resilience_suite(config? : ServiceResilienceConfig) -> ServiceResilienceResult
+
 pub fn run_token_bucket_model(seed? : UInt64, requests? : Int) -> TokenBucketResult
 
 pub fn run_traffic_model(TrafficConfig) -> TrafficResult
@@ -139,6 +143,10 @@ pub fn run_traffic_model(TrafficConfig) -> TrafficResult
 pub fn run_workflow_model(WorkflowPlan, seed? : UInt64) -> WorkflowResult
 
 pub fn seed_run(UInt64, ModelSummary) -> SeedRun
+
+pub fn service_resilience_config(seed? : UInt64, requests? : Int, workers? : Int, queue_limit? : Int, timeout_ticks? : Int, retry_limit? : Int, base_latency? : Int, jitter? : Int, fail_percent? : Int, drop_percent? : Int, rate_limit_capacity? : Int, rate_limit_refill? : Int, rate_limit_interval? : Int, min_success_percent? : Int) -> ServiceResilienceConfig
+
+pub fn service_resilience_seed_matrix(Array[UInt64]) -> SeedMatrix
 
 pub fn sweep_load_balancer_strategies(seed? : UInt64, jobs? : Int) -> SweepReport
 
@@ -719,6 +727,49 @@ pub(all) struct SeedRun {
   seed : UInt64
   summary : ModelSummary
 }
+
+pub(all) struct ServiceResilienceConfig {
+  seed : UInt64
+  requests : Int
+  workers : Int
+  queue_limit : Int
+  timeout_ticks : Int
+  retry_limit : Int
+  base_latency : Int
+  jitter : Int
+  fail_percent : Int
+  drop_percent : Int
+  rate_limit_capacity : Int
+  rate_limit_refill : Int
+  rate_limit_interval : Int
+  min_success_percent : Int
+}
+
+pub(all) struct ServiceResilienceResult {
+  config : ServiceResilienceConfig
+  accepted : Int
+  rejected : Int
+  completed : Int
+  failed : Int
+  timed_out : Int
+  retried : Int
+  rate_limited : Int
+  circuit_rejected : Int
+  max_queue_depth : Int
+  final_tick : Int
+  slo_passed : Bool
+  latency_count : Int
+  latency_min : Int
+  latency_max : Int
+  latency_sum : Int
+  digest : UInt64
+  invariants : InvariantReport
+  trace : Array[TraceEntry]
+}
+pub fn ServiceResilienceResult::average_latency(Self) -> Int
+pub fn ServiceResilienceResult::line(Self) -> String
+pub fn ServiceResilienceResult::success_percent(Self) -> Int
+pub fn ServiceResilienceResult::summary(Self) -> ModelSummary
 
 pub(all) struct Sim {
   mut now : Int

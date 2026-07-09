@@ -90,6 +90,10 @@ The library also includes:
 - `run_load_balancer_model`: multi-worker scheduling strategy model.
 - `run_circuit_breaker_model`: service protection model.
 - `run_token_bucket_model`: deterministic rate limiting model.
+- `run_service_resilience_suite`: request queue, retry, timeout, rate limit,
+  circuit breaker, SLO invariant, trace digest, and report workflow.
+- `service_resilience_seed_matrix`: run the service reliability suite across
+  multiple seeds for regression coverage.
 - `WorkflowPlan` and `run_workflow_model`: dependency-aware task scheduling.
 - `SweepReport`: compare deterministic model variants.
 - `InvariantReport`: aggregate reusable simulation invariants.

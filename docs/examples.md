@@ -113,6 +113,16 @@ moon run examples/resilience
 Demonstrates circuit breaker behavior and token bucket rate limiting under
 deterministic request streams.
 
+## Service Resilience Suite
+
+```bash
+moon run examples/service_resilience
+```
+
+Runs an end-to-end reliability model with request admission, worker capacity,
+queue pressure, retries, timeout accounting, rate limiting, circuit breaking,
+SLO invariant checks, latency summaries, and a seed matrix.
+
 ## Workflow Simulation
 
 ```bash

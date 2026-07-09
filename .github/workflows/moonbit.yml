@@ -75,6 +75,12 @@ jobs:
       - name: Run CLI demo
         run: moon run cmd/main
 
+      - name: Run example smoke tests
+        run: |
+          moon run examples/service_resilience
+          moon run examples/workflow
+          moon run examples/seed_matrix
+
       - name: Coverage summary (Linux)
         if: runner.os == 'Linux'
         run: |

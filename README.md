@@ -33,6 +33,8 @@ scenarios, metrics, snapshots, trace/replay, and reusable system models.
 - Snapshot, restore, and fork comparison helpers.
 - Reusable model helpers for timers, backoff, state machines, messages,
   network delivery, load balancing, circuit breakers, and token buckets.
+- Service reliability model suite for queues, retries, rate limits, circuit
+  breakers, SLO invariants, seed matrices, and replayable digests.
 - Workflow scheduling, parameter sweeps, and invariant checks for model suites.
 - Multi-seed regression matrices for exploring deterministic variability.
 
@@ -44,7 +46,8 @@ moon test
 moon run cmd/main
 ```
 
-The CLI demo prints a deterministic retry-style simulation trace and digest.
+The CLI demo prints a service reliability model report, invariant results, a
+seeded digest, and a smaller retry-style trace.
 
 ## Submission Verification
 
@@ -100,6 +103,7 @@ moon run examples/order_state
 moon run examples/network
 moon run examples/load_balancer
 moon run examples/resilience
+moon run examples/service_resilience
 moon run examples/workflow
 moon run examples/sweep
 moon run examples/seed_matrix
@@ -107,7 +111,8 @@ moon run examples/seed_matrix
 
 The examples cover queueing, retry/backoff, traffic lights, fixed-tick game
 loops, message delivery, state-machine transitions, network retry behavior,
-worker scheduling strategies, and resilience policies.
+worker scheduling strategies, resilience policies, and an end-to-end service
+reliability suite.
 
 ## Documentation
 

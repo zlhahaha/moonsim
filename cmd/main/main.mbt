@@ -4,6 +4,17 @@ fn main {
   println(@moonsim.render_feature_matrix())
   println(@moonsim.render_feature_coverage())
   println("")
+  let service = @moonsim.run_service_resilience_suite(
+    config=@moonsim.service_resilience_config(
+      seed=2026UL,
+      requests=32,
+      fail_percent=6,
+      drop_percent=2,
+      min_success_percent=70,
+    ),
+  )
+  println(@moonsim.render_service_resilience_report(service))
+  println("")
   let sim = @moonsim.Sim::new(seed=2026UL)
   ignore(sim.schedule_after(0, "request:start"))
   ignore(sim.schedule_after(2, "request:fail"))
