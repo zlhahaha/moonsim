@@ -15,16 +15,8 @@ pub(all) struct FeatureMatrix {
 ///|
 pub fn default_features() -> Array[String] {
   [
-    "scheduler",
-    "rng",
-    "trace",
-    "metrics",
-    "timer",
-    "snapshot",
-    "message",
-    "state-machine",
-    "digest",
-    "reports",
+    "scheduler", "rng", "trace", "metrics", "timer", "snapshot", "message", "state-machine",
+    "digest", "reports",
   ]
 }
 
@@ -48,7 +40,11 @@ pub fn build_feature_matrix() -> FeatureMatrix {
 }
 
 ///|
-pub fn FeatureMatrix::supports(self : FeatureMatrix, demo : String, feature : String) -> Bool {
+pub fn FeatureMatrix::supports(
+  self : FeatureMatrix,
+  demo : String,
+  feature : String,
+) -> Bool {
   for cell in self.cells {
     if cell.demo == demo && cell.feature == feature {
       return cell.supported
@@ -69,7 +65,10 @@ pub fn FeatureMatrix::feature_count(self : FeatureMatrix, demo : String) -> Int 
 }
 
 ///|
-pub fn FeatureMatrix::demo_count_for_feature(self : FeatureMatrix, feature : String) -> Int {
+pub fn FeatureMatrix::demo_count_for_feature(
+  self : FeatureMatrix,
+  feature : String,
+) -> Int {
   let mut count = 0
   for cell in self.cells {
     if cell.feature == feature && cell.supported {
@@ -119,11 +118,17 @@ pub fn FeatureCoverage::percent(self : FeatureCoverage) -> Int {
 
 ///|
 pub fn FeatureCoverage::line(self : FeatureCoverage) -> String {
-  "demos=" + self.demo_count.to_string() +
-  " features=" + self.feature_count.to_string() +
-  " supported=" + self.supported_cells.to_string() +
-  "/" + self.total_cells.to_string() +
-  " coverage=" + self.percent().to_string() + "%"
+  "demos=" +
+  self.demo_count.to_string() +
+  " features=" +
+  self.feature_count.to_string() +
+  " supported=" +
+  self.supported_cells.to_string() +
+  "/" +
+  self.total_cells.to_string() +
+  " coverage=" +
+  self.percent().to_string() +
+  "%"
 }
 
 ///|

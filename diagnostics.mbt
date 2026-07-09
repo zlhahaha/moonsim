@@ -64,7 +64,11 @@ pub fn Sim::event_views(self : Sim) -> Array[EventView] {
       tick: event.tick,
       priority: event.priority,
       name: event.name,
-      status: if event.cancelled { "cancelled" } else { "pending" },
+      status: if event.cancelled {
+        "cancelled"
+      } else {
+        "pending"
+      },
     })
   }
   views.sort_by(fn(a, b) {
@@ -119,13 +123,20 @@ pub fn trace_stats(entries : Array[TraceEntry]) -> TraceStats {
 
 ///|
 pub fn TraceStats::summary(self : TraceStats) -> String {
-  "entries=" + self.entries.to_string() +
-  " schedules=" + self.schedules.to_string() +
-  " executions=" + self.executions.to_string() +
-  " cancellations=" + self.cancellations.to_string() +
-  " rng=" + self.rng_draws.to_string() +
-  " metrics=" + self.metrics.to_string() +
-  " messages=" + self.messages.to_string()
+  "entries=" +
+  self.entries.to_string() +
+  " schedules=" +
+  self.schedules.to_string() +
+  " executions=" +
+  self.executions.to_string() +
+  " cancellations=" +
+  self.cancellations.to_string() +
+  " rng=" +
+  self.rng_draws.to_string() +
+  " metrics=" +
+  self.metrics.to_string() +
+  " messages=" +
+  self.messages.to_string()
 }
 
 ///|
@@ -143,7 +154,13 @@ pub fn Sim::timeline_text(self : Sim) -> String {
     }
     let view = views[i]
     buf.write_string(
-      view.tick.to_string() + ":" + view.id.to_string() + ":" + view.status + ":" + view.name,
+      view.tick.to_string() +
+      ":" +
+      view.id.to_string() +
+      ":" +
+      view.status +
+      ":" +
+      view.name,
     )
   }
   buf.to_string()

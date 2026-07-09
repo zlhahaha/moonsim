@@ -15,7 +15,9 @@ fn main {
 
   println("moonsim demo")
   println("version=" + @moonsim.version())
-  println("events_executed=" + sim.metrics().counter("events_executed").to_string())
+  println(
+    "events_executed=" + sim.metrics().counter("events_executed").to_string(),
+  )
   println("requests=" + sim.metrics().counter("requests").to_string())
   println("retries=" + sim.metrics().counter("retries").to_string())
   println("digest=" + sim.digest().to_string())

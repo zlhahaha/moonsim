@@ -15,7 +15,10 @@ pub(all) struct TimelineView {
 }
 
 ///|
-pub fn build_timeline(entries : Array[TraceEntry], bucket_size? : Int = 5) -> TimelineView {
+pub fn build_timeline(
+  entries : Array[TraceEntry],
+  bucket_size? : Int = 5,
+) -> TimelineView {
   let size = if bucket_size < 1 { 1 } else { bucket_size }
   let buckets : Array[TimelineBucket] = []
   for entry in entries {
@@ -35,11 +38,22 @@ pub fn build_timeline(entries : Array[TraceEntry], bucket_size? : Int = 5) -> Ti
 
 ///|
 fn empty_timeline_bucket(start : Int, end : Int) -> TimelineBucket {
-  { start_tick: start, end_tick: end, events: 0, executions: 0, metrics: 0, messages: 0 }
+  {
+    start_tick: start,
+    end_tick: end,
+    events: 0,
+    executions: 0,
+    metrics: 0,
+    messages: 0,
+  }
 }
 
 ///|
-fn find_timeline_bucket(buckets : Array[TimelineBucket], start : Int, end : Int) -> Int {
+fn find_timeline_bucket(
+  buckets : Array[TimelineBucket],
+  start : Int,
+  end : Int,
+) -> Int {
   for i in 0..<buckets.length() {
     if buckets[i].start_tick == start && buckets[i].end_tick == end {
       return i
@@ -93,11 +107,17 @@ pub fn TimelineView::peak_bucket(self : TimelineView) -> TimelineBucket {
 
 ///|
 pub fn TimelineBucket::line(self : TimelineBucket) -> String {
-  self.start_tick.to_string() + ".." + self.end_tick.to_string() +
-  " events=" + self.events.to_string() +
-  " executions=" + self.executions.to_string() +
-  " metrics=" + self.metrics.to_string() +
-  " messages=" + self.messages.to_string()
+  self.start_tick.to_string() +
+  ".." +
+  self.end_tick.to_string() +
+  " events=" +
+  self.events.to_string() +
+  " executions=" +
+  self.executions.to_string() +
+  " metrics=" +
+  self.metrics.to_string() +
+  " messages=" +
+  self.messages.to_string()
 }
 
 ///|

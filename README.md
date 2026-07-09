@@ -46,6 +46,33 @@ moon run cmd/main
 
 The CLI demo prints a deterministic retry-style simulation trace and digest.
 
+## Pre-acceptance Verification
+
+The OSC 2026 MoonBit project pre-acceptance check requires these commands to
+run in order:
+
+```bash
+moon check
+moon fmt --deny-warn
+moon info --deny-warn
+moon test
+```
+
+The repository includes `.github/workflows/moonbit.yml` with the same required
+steps and installs the official MoonBit dev toolchain before running them.
+
+The local stable toolchain observed during this repair was:
+
+```text
+moon 0.1.20260703 (6fbf8c3 2026-07-03)
+moonc v0.10.3+16975d007 (2026-07-03)
+moonrun 0.1.20260703 (6fbf8c3 2026-07-03)
+```
+
+This stable build still rejects `moon fmt --deny-warn` and
+`moon info --deny-warn`; use a MoonBit toolchain whose `moon fmt --help` and
+`moon info --help` list `--deny-warn` for the required pre-acceptance check.
+
 ## API Preview
 
 ```moonbit

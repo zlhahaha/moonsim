@@ -25,14 +25,26 @@ pub fn reliability_config(
   operations? : Int = 10,
   fail_percent? : Int = 30,
   retry_limit? : Int = 2,
-  backoff? : Int = 2
+  backoff? : Int = 2,
 ) -> ReliabilityConfig {
   {
     seed,
-    operations: if operations < 0 { 0 } else { operations },
+    operations: if operations < 0 {
+      0
+    } else {
+      operations
+    },
     fail_percent: clamp_percent(fail_percent),
-    retry_limit: if retry_limit < 0 { 0 } else { retry_limit },
-    backoff: if backoff < 0 { 0 } else { backoff },
+    retry_limit: if retry_limit < 0 {
+      0
+    } else {
+      retry_limit
+    },
+    backoff: if backoff < 0 {
+      0
+    } else {
+      backoff
+    },
   }
 }
 
@@ -56,7 +68,11 @@ pub fn run_reliability_model(config : ReliabilityConfig) -> ReliabilityResult {
 }
 
 ///|
-fn run_reliability_operation(sim : Sim, config : ReliabilityConfig, operation : Int) -> Unit {
+fn run_reliability_operation(
+  sim : Sim,
+  config : ReliabilityConfig,
+  operation : Int,
+) -> Unit {
   let mut attempt = 0
   let mut tick = operation
   let mut done = false
@@ -102,9 +118,15 @@ pub fn ReliabilityResult::summary(self : ReliabilityResult) -> ModelSummary {
 
 ///|
 pub fn ReliabilityResult::line(self : ReliabilityResult) -> String {
-  "operations=" + self.operations.to_string() +
-  " success_rate=" + self.success_rate_percent().to_string() + "%" +
-  " retries=" + self.retries.to_string() +
-  " exhausted=" + self.exhausted.to_string() +
-  " digest=" + self.digest.to_string()
+  "operations=" +
+  self.operations.to_string() +
+  " success_rate=" +
+  self.success_rate_percent().to_string() +
+  "%" +
+  " retries=" +
+  self.retries.to_string() +
+  " exhausted=" +
+  self.exhausted.to_string() +
+  " digest=" +
+  self.digest.to_string()
 }

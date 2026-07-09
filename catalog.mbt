@@ -11,7 +11,7 @@ pub fn demo_descriptor(
   name : String,
   command : String,
   purpose : String,
-  features : Array[String]
+  features : Array[String],
 ) -> DemoDescriptor {
   { name, command, purpose, features }
 }
@@ -144,7 +144,10 @@ fn join_features(features : Array[String]) -> String {
 }
 
 ///|
-pub fn DemoDescriptor::has_feature(self : DemoDescriptor, feature : String) -> Bool {
+pub fn DemoDescriptor::has_feature(
+  self : DemoDescriptor,
+  feature : String,
+) -> Bool {
   for item in self.features {
     if item == feature {
       return true

@@ -68,7 +68,7 @@ pub fn Sim::schedule_at_tick(
   self : Sim,
   at : Tick,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> EventId {
   event_id(self.schedule_at(at.to_int(), name, priority~))
 }
@@ -78,7 +78,7 @@ pub fn Sim::schedule_at(
   self : Sim,
   tick : Int,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> Int {
   let scheduled_tick = if tick < self.now { self.now } else { tick }
   let id = self.next_id
@@ -93,7 +93,7 @@ pub fn Sim::schedule_after_duration(
   self : Sim,
   delay : Duration,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> EventId {
   event_id(self.schedule_after(delay.to_int(), name, priority~))
 }
@@ -103,7 +103,7 @@ pub fn Sim::schedule_after(
   self : Sim,
   delay : Int,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> Int {
   let normalized_delay = if delay < 0 { 0 } else { delay }
   self.schedule_at(self.now + normalized_delay, name, priority~)
@@ -116,12 +116,14 @@ pub fn Sim::schedule_repeating(
   every : Int,
   times : Int,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> Int {
   let start = self.now + (if start_after < 0 { 0 } else { start_after })
   let id = self.next_id
   self.next_id += 1
-  self.events.push(ScheduledEvent::repeating(id, start, name, every, times, priority~))
+  self.events.push(
+    ScheduledEvent::repeating(id, start, name, every, times, priority~),
+  )
   self.record(id, "schedule.repeat", name)
   id
 }
@@ -181,18 +183,29 @@ pub fn Sim::run_until_idle(self : Sim, max_steps? : Int = 100000) -> Int {
 }
 
 ///|
-pub fn Sim::run_report_until_idle(self : Sim, max_steps? : Int = 100000) -> RunReport {
+pub fn Sim::run_report_until_idle(
+  self : Sim,
+  max_steps? : Int = 100000,
+) -> RunReport {
   let steps = self.run_until_idle(max_steps~)
   {
     steps,
     final_tick: self.now,
     pending: self.pending_count(),
-    reason: if self.pending_count() == 0 { RunStopReason::Idle } else { StepLimit },
+    reason: if self.pending_count() == 0 {
+      RunStopReason::Idle
+    } else {
+      StepLimit
+    },
   }
 }
 
 ///|
-pub fn Sim::run_until_tick(self : Sim, tick_limit : Int, max_steps? : Int = 100000) -> RunReport {
+pub fn Sim::run_until_tick(
+  self : Sim,
+  tick_limit : Int,
+  max_steps? : Int = 100000,
+) -> RunReport {
   let mut steps = 0
   while steps < max_steps {
     let index = self.next_event_index()
@@ -218,7 +231,12 @@ pub fn Sim::run_until_tick(self : Sim, tick_limit : Int, max_steps? : Int = 1000
         }
     }
   }
-  { steps, final_tick: self.now, pending: self.pending_count(), reason: StepLimit }
+  {
+    steps,
+    final_tick: self.now,
+    pending: self.pending_count(),
+    reason: StepLimit,
+  }
 }
 
 ///|
@@ -231,26 +249,46 @@ pub fn Sim::next_int(self : Sim, bound : Int) -> Int {
 ///|
 pub fn Sim::next_range(self : Sim, low : Int, high : Int) -> Int {
   let value = self.rng.next_range(low, high)
-  self.record(0, "rng.range", low.to_string() + ".." + high.to_string() + "=" + value.to_string())
+  self.record(
+    0,
+    "rng.range",
+    low.to_string() + ".." + high.to_string() + "=" + value.to_string(),
+  )
   value
 }
 
 ///|
 pub fn[T] Sim::choose(self : Sim, label : String, items : Array[T]) -> T? {
-  let index = if items.length() == 0 { -1 } else { self.rng.next_int(items.length()) }
+  let index = if items.length() == 0 {
+    -1
+  } else {
+    self.rng.next_int(items.length())
+  }
   self.record(0, "rng.choose", label + "=" + index.to_string())
-  if index < 0 { None } else { Some(items[index]) }
+  if index < 0 {
+    None
+  } else {
+    Some(items[index])
+  }
 }
 
 ///|
-pub fn[T] Sim::shuffle(self : Sim, label : String, items : Array[T]) -> Array[T] {
+pub fn[T] Sim::shuffle(
+  self : Sim,
+  label : String,
+  items : Array[T],
+) -> Array[T] {
   let result = self.rng.shuffle(items)
   self.record(0, "rng.shuffle", label + "#" + items.length().to_string())
   result
 }
 
 ///|
-pub fn Sim::choose_weighted(self : Sim, label : String, choices : Array[WeightedChoice]) -> String? {
+pub fn Sim::choose_weighted(
+  self : Sim,
+  label : String,
+  choices : Array[WeightedChoice],
+) -> String? {
   let value = self.rng.choose_weighted(choices)
   match value {
     None => self.record(0, "rng.weighted", label + "=None")
@@ -298,7 +336,12 @@ pub fn Sim::sample(self : Sim, name : String, value : Int) -> Unit {
 }
 
 ///|
-fn Sim::record(self : Sim, event_id : Int, kind : String, detail : String) -> Unit {
+fn Sim::record(
+  self : Sim,
+  event_id : Int,
+  kind : String,
+  detail : String,
+) -> Unit {
   self.trace_entries.push(trace_entry(self.now, event_id, kind, detail))
 }
 

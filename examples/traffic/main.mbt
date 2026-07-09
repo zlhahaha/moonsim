@@ -2,7 +2,11 @@
 fn main {
   let sim = @moonsim.Sim::new(seed=300UL)
   let states = ["green", "yellow", "red", "red"]
-  ignore(sim.install_timer(@moonsim.timer_plan("light:cycle", start_after=0, interval=5, times=8)))
+  ignore(
+    sim.install_timer(
+      @moonsim.timer_plan("light:cycle", start_after=0, interval=5, times=8),
+    ),
+  )
 
   for i in 0..<8 {
     let state = states[i % states.length()]
@@ -30,6 +34,8 @@ fn main {
   println("red_phases=" + sim.metrics().counter("red_phases").to_string())
   println("arrival_min=" + arrivals.min.to_string())
   println("arrival_max=" + arrivals.max.to_string())
-  println("events_executed=" + sim.metrics().counter("events_executed").to_string())
+  println(
+    "events_executed=" + sim.metrics().counter("events_executed").to_string(),
+  )
   println("digest=" + sim.digest().to_string())
 }

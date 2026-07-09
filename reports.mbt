@@ -4,11 +4,15 @@ pub fn render_metrics_report(metrics : Metrics) -> String {
   buf.write_string("# Metrics\n")
   let counters = metrics.snapshot()
   for counter in counters {
-    buf.write_string("- counter " + counter.name + " = " + counter.value.to_string() + "\n")
+    buf.write_string(
+      "- counter " + counter.name + " = " + counter.value.to_string() + "\n",
+    )
   }
   let gauges = metrics.gauge_snapshot()
   for gauge in gauges {
-    buf.write_string("- gauge " + gauge.name + " = " + gauge.value.to_string() + "\n")
+    buf.write_string(
+      "- gauge " + gauge.name + " = " + gauge.value.to_string() + "\n",
+    )
   }
   let samples = metrics.sample_snapshot()
   if samples.length() > 0 {
@@ -24,18 +28,28 @@ pub fn render_metric_diff(diff : MetricDiff) -> String {
   buf.write_string(diff.summary() + "\n")
   for delta in diff.counters {
     buf.write_string(
-      "- counter " + delta.name +
-      " before=" + delta.before.to_string() +
-      " after=" + delta.after.to_string() +
-      " delta=" + delta.delta.to_string() + "\n",
+      "- counter " +
+      delta.name +
+      " before=" +
+      delta.before.to_string() +
+      " after=" +
+      delta.after.to_string() +
+      " delta=" +
+      delta.delta.to_string() +
+      "\n",
     )
   }
   for delta in diff.gauges {
     buf.write_string(
-      "- gauge " + delta.name +
-      " before=" + delta.before.to_string() +
-      " after=" + delta.after.to_string() +
-      " delta=" + delta.delta.to_string() + "\n",
+      "- gauge " +
+      delta.name +
+      " before=" +
+      delta.before.to_string() +
+      " after=" +
+      delta.after.to_string() +
+      " delta=" +
+      delta.delta.to_string() +
+      "\n",
     )
   }
   buf.to_string()
@@ -44,16 +58,25 @@ pub fn render_metric_diff(diff : MetricDiff) -> String {
 ///|
 pub fn render_sample_distribution(metrics : Metrics, name : String) -> String {
   let dist = metrics.distribution(name)
-  "sample " + name +
-  " count=" + dist.count.to_string() +
-  " min=" + dist.min.to_string() +
-  " max=" + dist.max.to_string() +
-  " median=" + dist.median.to_string() +
-  " p90=" + dist.p90.to_string()
+  "sample " +
+  name +
+  " count=" +
+  dist.count.to_string() +
+  " min=" +
+  dist.min.to_string() +
+  " max=" +
+  dist.max.to_string() +
+  " median=" +
+  dist.median.to_string() +
+  " p90=" +
+  dist.p90.to_string()
 }
 
 ///|
-pub fn render_trace_report(entries : Array[TraceEntry], limit? : Int = 20) -> String {
+pub fn render_trace_report(
+  entries : Array[TraceEntry],
+  limit? : Int = 20,
+) -> String {
   let buf = StringBuilder::new()
   let stats = trace_stats(entries)
   buf.write_string("# Trace\n")
@@ -63,7 +86,9 @@ pub fn render_trace_report(entries : Array[TraceEntry], limit? : Int = 20) -> St
     buf.write_string("- " + entries[i].format() + "\n")
   }
   if entries.length() > max {
-    buf.write_string("- ... " + (entries.length() - max).to_string() + " more\n")
+    buf.write_string(
+      "- ... " + (entries.length() - max).to_string() + " more\n",
+    )
   }
   buf.to_string()
 }

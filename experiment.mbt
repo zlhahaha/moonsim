@@ -12,7 +12,11 @@ pub(all) struct ExperimentReport {
 }
 
 ///|
-pub fn experiment_case(name : String, summary : ModelSummary, notes? : String = "") -> ExperimentCase {
+pub fn experiment_case(
+  name : String,
+  summary : ModelSummary,
+  notes? : String = "",
+) -> ExperimentCase {
   { name, summary, notes }
 }
 
@@ -22,7 +26,10 @@ pub fn ExperimentReport::new(title : String) -> ExperimentReport {
 }
 
 ///|
-pub fn ExperimentReport::add(self : ExperimentReport, item : ExperimentCase) -> ExperimentReport {
+pub fn ExperimentReport::add(
+  self : ExperimentReport,
+  item : ExperimentCase,
+) -> ExperimentReport {
   self.cases.push(item)
   self
 }
@@ -83,52 +90,75 @@ pub fn ExperimentReport::render(self : ExperimentReport) -> String {
 ///|
 pub fn demo_experiment() -> ExperimentReport {
   ExperimentReport::new("moonsim model demo")
-    .add(experiment_case(
+  .add(
+    experiment_case(
       "queue",
       queue_summary(run_queue_model(queue_config(customers=5))),
       notes="arrival and service model",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "retry",
       retry_summary(run_retry_model(retry_config(fail_until=2))),
       notes="deterministic backoff",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "traffic",
       traffic_summary(run_traffic_model(traffic_config(cars=12))),
       notes="timer and sample metrics",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "network",
       network_summary(run_network_model(network_config(messages=6))),
       notes="message delivery and retry",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "load_balancer",
-      load_balancer_summary(run_load_balancer_model(load_balancer_config(jobs=8))),
+      load_balancer_summary(
+        run_load_balancer_model(load_balancer_config(jobs=8)),
+      ),
       notes="worker scheduling model",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "circuit_breaker",
       run_circuit_breaker_model(calls=8).summary(),
       notes="service protection model",
-    ))
-    .add(experiment_case(
+    ),
+  )
+  .add(
+    experiment_case(
       "token_bucket",
       run_token_bucket_model(requests=8).summary(),
       notes="rate limiting model",
-    ))
+    ),
+  )
 }
 
 ///|
-pub fn compare_experiments(left : ExperimentReport, right : ExperimentReport) -> TraceComparison {
+pub fn compare_experiments(
+  left : ExperimentReport,
+  right : ExperimentReport,
+) -> TraceComparison {
   let left_entries : Array[TraceEntry] = []
   let right_entries : Array[TraceEntry] = []
   for i in 0..<left.cases.length() {
-    left_entries.push(trace_entry(i, i + 1, "experiment.case", left.cases[i].summary.line()))
+    left_entries.push(
+      trace_entry(i, i + 1, "experiment.case", left.cases[i].summary.line()),
+    )
   }
   for i in 0..<right.cases.length() {
-    right_entries.push(trace_entry(i, i + 1, "experiment.case", right.cases[i].summary.line()))
+    right_entries.push(
+      trace_entry(i, i + 1, "experiment.case", right.cases[i].summary.line()),
+    )
   }
   compare_traces(left_entries, right_entries)
 }

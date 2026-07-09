@@ -12,7 +12,11 @@ pub(all) struct InvariantReport {
 }
 
 ///|
-pub fn invariant_check(name : String, passed : Bool, detail? : String = "") -> InvariantCheck {
+pub fn invariant_check(
+  name : String,
+  passed : Bool,
+  detail? : String = "",
+) -> InvariantCheck {
   { name, passed, detail }
 }
 
@@ -22,7 +26,10 @@ pub fn InvariantReport::new(subject : String) -> InvariantReport {
 }
 
 ///|
-pub fn InvariantReport::add(self : InvariantReport, check : InvariantCheck) -> InvariantReport {
+pub fn InvariantReport::add(
+  self : InvariantReport,
+  check : InvariantCheck,
+) -> InvariantReport {
   self.checks.push(check)
   self
 }
@@ -59,7 +66,10 @@ pub fn InvariantReport::is_empty(self : InvariantReport) -> Bool {
 }
 
 ///|
-pub fn InvariantReport::has_check(self : InvariantReport, name : String) -> Bool {
+pub fn InvariantReport::has_check(
+  self : InvariantReport,
+  name : String,
+) -> Bool {
   for check in self.checks {
     if check.name == name {
       return true
@@ -69,7 +79,10 @@ pub fn InvariantReport::has_check(self : InvariantReport, name : String) -> Bool
 }
 
 ///|
-pub fn InvariantReport::merge(self : InvariantReport, other : InvariantReport) -> InvariantReport {
+pub fn InvariantReport::merge(
+  self : InvariantReport,
+  other : InvariantReport,
+) -> InvariantReport {
   let merged = InvariantReport::new(self.subject + "+" + other.subject)
   for check in self.checks {
     ignore(merged.add(check))
@@ -81,7 +94,9 @@ pub fn InvariantReport::merge(self : InvariantReport, other : InvariantReport) -
 }
 
 ///|
-pub fn InvariantReport::only_failures(self : InvariantReport) -> InvariantReport {
+pub fn InvariantReport::only_failures(
+  self : InvariantReport,
+) -> InvariantReport {
   let failures = InvariantReport::new(self.subject + ":failures")
   for check in self.checks {
     if !check.passed {
@@ -94,9 +109,13 @@ pub fn InvariantReport::only_failures(self : InvariantReport) -> InvariantReport
 ///|
 pub fn InvariantReport::summary(self : InvariantReport) -> String {
   let status = if self.passed() { "PASS" } else { "FAIL" }
-  status + " invariants=" + self.subject +
-  " checks=" + self.checks.length().to_string() +
-  " failed=" + self.failed_count().to_string()
+  status +
+  " invariants=" +
+  self.subject +
+  " checks=" +
+  self.checks.length().to_string() +
+  " failed=" +
+  self.failed_count().to_string()
 }
 
 ///|
@@ -117,13 +136,34 @@ pub fn InvariantReport::render(self : InvariantReport) -> String {
 ///|
 pub fn check_sim_invariants(sim : Sim) -> InvariantReport {
   InvariantReport::new("sim")
-    .add(invariant_check("non_negative_time", sim.time() >= 0, detail=sim.time().to_string()))
-    .add(invariant_check("valid_pending_events", sim.validate().passed(), detail=sim.validate().summary()))
-    .add(invariant_check("trace_monotonic", expect_trace_monotonic_ticks(sim.trace()).passed))
+  .add(
+    invariant_check(
+      "non_negative_time",
+      sim.time() >= 0,
+      detail=sim.time().to_string(),
+    ),
+  )
+  .add(
+    invariant_check(
+      "valid_pending_events",
+      sim.validate().passed(),
+      detail=sim.validate().summary(),
+    ),
+  )
+  .add(
+    invariant_check(
+      "trace_monotonic",
+      expect_trace_monotonic_ticks(sim.trace()).passed,
+    ),
+  )
 }
 
 ///|
-pub fn check_counter_at_least(sim : Sim, name : String, minimum : Int) -> InvariantCheck {
+pub fn check_counter_at_least(
+  sim : Sim,
+  name : String,
+  minimum : Int,
+) -> InvariantCheck {
   let value = sim.metrics().counter(name)
   invariant_check(
     "counter_at_least:" + name,
@@ -134,5 +174,9 @@ pub fn check_counter_at_least(sim : Sim, name : String, minimum : Int) -> Invari
 
 ///|
 pub fn check_no_pending(sim : Sim) -> InvariantCheck {
-  invariant_check("no_pending_events", sim.pending_count() == 0, detail=sim.pending_count().to_string())
+  invariant_check(
+    "no_pending_events",
+    sim.pending_count() == 0,
+    detail=sim.pending_count().to_string(),
+  )
 }

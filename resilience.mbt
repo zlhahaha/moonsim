@@ -30,21 +30,40 @@ pub(all) struct CircuitBreakerResult {
 pub fn circuit_breaker_config(
   failure_threshold? : Int = 3,
   reset_timeout? : Int = 5,
-  half_open_successes? : Int = 2
+  half_open_successes? : Int = 2,
 ) -> CircuitBreakerConfig {
   {
-    failure_threshold: if failure_threshold < 1 { 1 } else { failure_threshold },
-    reset_timeout: if reset_timeout < 1 { 1 } else { reset_timeout },
-    half_open_successes: if half_open_successes < 1 { 1 } else { half_open_successes },
+    failure_threshold: if failure_threshold < 1 {
+      1
+    } else {
+      failure_threshold
+    },
+    reset_timeout: if reset_timeout < 1 {
+      1
+    } else {
+      reset_timeout
+    },
+    half_open_successes: if half_open_successes < 1 {
+      1
+    } else {
+      half_open_successes
+    },
   }
 }
 
 ///|
 pub fn CircuitBreaker::new(
   name : String,
-  config? : CircuitBreakerConfig = circuit_breaker_config()
+  config? : CircuitBreakerConfig = circuit_breaker_config(),
 ) -> CircuitBreaker {
-  { name, config, state: "closed", failures: 0, opened_tick: -1, trial_successes: 0 }
+  {
+    name,
+    config,
+    state: "closed",
+    failures: 0,
+    opened_tick: -1,
+    trial_successes: 0,
+  }
 }
 
 ///|
@@ -54,7 +73,8 @@ pub fn CircuitBreaker::state(self : CircuitBreaker) -> String {
 
 ///|
 pub fn CircuitBreaker::allow(self : CircuitBreaker, sim : Sim) -> Bool {
-  if self.state == "open" && sim.time() - self.opened_tick >= self.config.reset_timeout {
+  if self.state == "open" &&
+    sim.time() - self.opened_tick >= self.config.reset_timeout {
     self.state = "half_open"
     self.trial_successes = 0
     sim.record(0, "circuit.transition", self.name + ":open->half_open")
@@ -105,7 +125,10 @@ fn CircuitBreaker::open(self : CircuitBreaker, sim : Sim) -> Unit {
 }
 
 ///|
-pub fn run_circuit_breaker_model(seed? : UInt64 = 606UL, calls? : Int = 12) -> CircuitBreakerResult {
+pub fn run_circuit_breaker_model(
+  seed? : UInt64 = 606UL,
+  calls? : Int = 12,
+) -> CircuitBreakerResult {
   let sim = Sim::new(seed~)
   let breaker = CircuitBreaker::new("service")
   for call in 0..<calls {
@@ -155,21 +178,33 @@ pub fn TokenBucket::new(
   name : String,
   capacity? : Int = 5,
   refill? : Int = 1,
-  interval? : Int = 1
+  interval? : Int = 1,
 ) -> TokenBucket {
   let cap = if capacity < 1 { 1 } else { capacity }
   {
     name,
     capacity: cap,
-    refill: if refill < 1 { 1 } else { refill },
-    interval: if interval < 1 { 1 } else { interval },
+    refill: if refill < 1 {
+      1
+    } else {
+      refill
+    },
+    interval: if interval < 1 {
+      1
+    } else {
+      interval
+    },
     tokens: cap,
     last_refill_tick: 0,
   }
 }
 
 ///|
-pub fn TokenBucket::allow(self : TokenBucket, sim : Sim, cost? : Int = 1) -> Bool {
+pub fn TokenBucket::allow(
+  self : TokenBucket,
+  sim : Sim,
+  cost? : Int = 1,
+) -> Bool {
   self.refill_to(sim.time())
   let normalized_cost = if cost < 1 { 1 } else { cost }
   if self.tokens >= normalized_cost {
@@ -199,11 +234,18 @@ pub fn TokenBucket::refill_to(self : TokenBucket, tick : Int) -> Unit {
 
 ///|
 fn min_int(a : Int, b : Int) -> Int {
-  if a < b { a } else { b }
+  if a < b {
+    a
+  } else {
+    b
+  }
 }
 
 ///|
-pub fn run_token_bucket_model(seed? : UInt64 = 7070UL, requests? : Int = 14) -> TokenBucketResult {
+pub fn run_token_bucket_model(
+  seed? : UInt64 = 7070UL,
+  requests? : Int = 14,
+) -> TokenBucketResult {
   let sim = Sim::new(seed~)
   let bucket = TokenBucket::new("api", capacity=4, refill=2, interval=3)
   for request in 0..<requests {
@@ -223,7 +265,9 @@ pub fn run_token_bucket_model(seed? : UInt64 = 7070UL, requests? : Int = 14) -> 
 }
 
 ///|
-pub fn CircuitBreakerResult::summary(self : CircuitBreakerResult) -> ModelSummary {
+pub fn CircuitBreakerResult::summary(
+  self : CircuitBreakerResult,
+) -> ModelSummary {
   {
     name: "circuit_breaker",
     digest: self.digest,

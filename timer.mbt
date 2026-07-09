@@ -12,14 +12,26 @@ pub fn Backoff::new(
   initial? : Int = 1,
   factor? : Int = 2,
   max_delay? : Int = 1024,
-  jitter? : Int = 0
+  jitter? : Int = 0,
 ) -> Backoff {
   let safe_initial = if initial < 1 { 1 } else { initial }
   {
     initial: safe_initial,
-    factor: if factor < 1 { 1 } else { factor },
-    max_delay: if max_delay < safe_initial { safe_initial } else { max_delay },
-    jitter: if jitter < 0 { 0 } else { jitter },
+    factor: if factor < 1 {
+      1
+    } else {
+      factor
+    },
+    max_delay: if max_delay < safe_initial {
+      safe_initial
+    } else {
+      max_delay
+    },
+    jitter: if jitter < 0 {
+      0
+    } else {
+      jitter
+    },
     current: safe_initial,
   }
 }
@@ -35,7 +47,11 @@ pub fn Backoff::next_delay(self : Backoff, rng : Rng) -> Int {
   let delay = self.current + noise
   let next = self.current * self.factor
   self.current = if next > self.max_delay { self.max_delay } else { next }
-  if delay > self.max_delay { self.max_delay } else { delay }
+  if delay > self.max_delay {
+    self.max_delay
+  } else {
+    delay
+  }
 }
 
 ///|
@@ -53,13 +69,25 @@ pub fn timer_plan(
   start_after? : Int = 0,
   interval? : Int = 1,
   times? : Int = 1,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> TimerPlan {
   {
     name,
-    start_after: if start_after < 0 { 0 } else { start_after },
-    interval: if interval < 1 { 1 } else { interval },
-    times: if times < 1 { 1 } else { times },
+    start_after: if start_after < 0 {
+      0
+    } else {
+      start_after
+    },
+    interval: if interval < 1 {
+      1
+    } else {
+      interval
+    },
+    times: if times < 1 {
+      1
+    } else {
+      times
+    },
     priority,
   }
 }
@@ -81,7 +109,11 @@ pub fn Sim::schedule_timeout(self : Sim, after : Int, name : String) -> Int {
 }
 
 ///|
-pub fn Sim::schedule_backoff(self : Sim, backoff : Backoff, name : String) -> Int {
+pub fn Sim::schedule_backoff(
+  self : Sim,
+  backoff : Backoff,
+  name : String,
+) -> Int {
   let delay = backoff.next_delay(self.rng)
   self.record(0, "timer.backoff", name + "=" + delay.to_string())
   self.schedule_after(delay, name)

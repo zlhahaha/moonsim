@@ -86,7 +86,10 @@ pub fn weighted_choice(label : String, weight : Int) -> WeightedChoice {
 }
 
 ///|
-pub fn Rng::choose_weighted(self : Rng, choices : Array[WeightedChoice]) -> String? {
+pub fn Rng::choose_weighted(
+  self : Rng,
+  choices : Array[WeightedChoice],
+) -> String? {
   let mut total = 0
   for choice in choices {
     total += choice.weight

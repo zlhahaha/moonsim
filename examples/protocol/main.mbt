@@ -14,7 +14,9 @@ fn main {
   println("message protocol simulation")
   println("messages=" + bus.messages().length().to_string())
   println("pending_messages=" + bus.pending(sim).to_string())
-  println("delivered=" + sim.metrics().counter("messages_delivered").to_string())
+  println(
+    "delivered=" + sim.metrics().counter("messages_delivered").to_string(),
+  )
   println("dropped=" + sim.metrics().counter("messages_dropped").to_string())
   println("digest=" + sim.digest().to_string())
 }

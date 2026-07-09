@@ -65,7 +65,12 @@ pub fn SimSnapshot::fork(self : SimSnapshot, name : String) -> Sim {
 }
 
 ///|
-pub fn compare_forks(left_name : String, left : Sim, right_name : String, right : Sim) -> ForkComparison {
+pub fn compare_forks(
+  left_name : String,
+  left : Sim,
+  right_name : String,
+  right : Sim,
+) -> ForkComparison {
   {
     left_name,
     right_name,
@@ -80,7 +85,14 @@ pub fn compare_forks(left_name : String, left : Sim, right_name : String, right 
 ///|
 pub fn ForkComparison::summary(self : ForkComparison) -> String {
   let status = if self.same_digest { "same" } else { "different" }
-  "forks " + status + " left=" + self.left_name + " right=" + self.right_name +
-  " left_events=" + self.left_events.to_string() +
-  " right_events=" + self.right_events.to_string()
+  "forks " +
+  status +
+  " left=" +
+  self.left_name +
+  " right=" +
+  self.right_name +
+  " left_events=" +
+  self.left_events.to_string() +
+  " right_events=" +
+  self.right_events.to_string()
 }

@@ -18,7 +18,7 @@ pub fn ScheduledEvent::new(
   id : Int,
   tick : Int,
   name : String,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> ScheduledEvent {
   {
     id,
@@ -38,7 +38,7 @@ pub fn ScheduledEvent::repeating(
   name : String,
   every : Int,
   times : Int,
-  priority? : Int = 0
+  priority? : Int = 0,
 ) -> ScheduledEvent {
   {
     id,
@@ -46,8 +46,16 @@ pub fn ScheduledEvent::repeating(
     priority,
     name,
     cancelled: false,
-    repeat_every: if every < 1 { 1 } else { every },
-    remaining_runs: if times < 1 { 1 } else { times },
+    repeat_every: if every < 1 {
+      1
+    } else {
+      every
+    },
+    remaining_runs: if times < 1 {
+      1
+    } else {
+      times
+    },
   }
 }
 

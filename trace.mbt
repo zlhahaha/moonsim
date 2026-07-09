@@ -77,20 +77,32 @@ pub fn trace_entry(
   tick : Int,
   event_id : Int,
   kind : String,
-  detail : String
+  detail : String,
 ) -> TraceEntry {
   { tick, event_id, kind, detail }
 }
 
 ///|
 pub fn TraceEntry::format(self : TraceEntry) -> String {
-  "tick=" + self.tick.to_string() + " event=" + self.event_id.to_string() +
-  " kind=" + self.kind + " detail=" + self.detail
+  "tick=" +
+  self.tick.to_string() +
+  " event=" +
+  self.event_id.to_string() +
+  " kind=" +
+  self.kind +
+  " detail=" +
+  self.detail
 }
 
 ///|
 pub fn TraceEntry::to_line(self : TraceEntry) -> String {
-  self.tick.to_string() + "|" + self.event_id.to_string() + "|" + self.kind + "|" + self.detail
+  self.tick.to_string() +
+  "|" +
+  self.event_id.to_string() +
+  "|" +
+  self.kind +
+  "|" +
+  self.detail
 }
 
 ///|
@@ -110,7 +122,7 @@ pub fn trace_query(
   kind? : String = "",
   detail? : String = "",
   min_tick? : Int = -1,
-  max_tick? : Int = -1
+  max_tick? : Int = -1,
 ) -> TraceQuery {
   { kind, detail, min_tick, max_tick }
 }
@@ -131,7 +143,10 @@ pub fn TraceQuery::matches(self : TraceQuery, entry : TraceEntry) -> Bool {
 }
 
 ///|
-pub fn query_trace(entries : Array[TraceEntry], query : TraceQuery) -> TraceQueryResult {
+pub fn query_trace(
+  entries : Array[TraceEntry],
+  query : TraceQuery,
+) -> TraceQueryResult {
   let result : Array[TraceEntry] = []
   for entry in entries {
     if query.matches(entry) {
@@ -142,12 +157,18 @@ pub fn query_trace(entries : Array[TraceEntry], query : TraceQuery) -> TraceQuer
 }
 
 ///|
-pub fn trace_filter_kind(entries : Array[TraceEntry], kind : String) -> Array[TraceEntry] {
+pub fn trace_filter_kind(
+  entries : Array[TraceEntry],
+  kind : String,
+) -> Array[TraceEntry] {
   query_trace(entries, trace_query(kind~)).entries
 }
 
 ///|
-pub fn trace_filter_detail(entries : Array[TraceEntry], detail : String) -> Array[TraceEntry] {
+pub fn trace_filter_detail(
+  entries : Array[TraceEntry],
+  detail : String,
+) -> Array[TraceEntry] {
   query_trace(entries, trace_query(detail~)).entries
 }
 
@@ -155,7 +176,7 @@ pub fn trace_filter_detail(entries : Array[TraceEntry], detail : String) -> Arra
 pub fn trace_filter_tick_range(
   entries : Array[TraceEntry],
   min_tick : Int,
-  max_tick : Int
+  max_tick : Int,
 ) -> Array[TraceEntry] {
   query_trace(entries, trace_query(min_tick~, max_tick~)).entries
 }
@@ -198,7 +219,10 @@ fn add_trace_kind_count(counts : Array[TraceKindCount], kind : String) -> Unit {
 }
 
 ///|
-pub fn TraceQueryResult::kind_count(self : TraceQueryResult, kind : String) -> Int {
+pub fn TraceQueryResult::kind_count(
+  self : TraceQueryResult,
+  kind : String,
+) -> Int {
   for item in self.kind_counts {
     if item.kind == kind {
       return item.count
@@ -209,16 +233,19 @@ pub fn TraceQueryResult::kind_count(self : TraceQueryResult, kind : String) -> I
 
 ///|
 pub fn TraceQueryResult::summary(self : TraceQueryResult) -> String {
-  "entries=" + self.entries.length().to_string() +
-  " first_tick=" + self.first_tick.to_string() +
-  " last_tick=" + self.last_tick.to_string()
+  "entries=" +
+  self.entries.length().to_string() +
+  " first_tick=" +
+  self.first_tick.to_string() +
+  " last_tick=" +
+  self.last_tick.to_string()
 }
 
 ///|
 pub fn expect_trace_kind_count(
   entries : Array[TraceEntry],
   kind : String,
-  expected : Int
+  expected : Int,
 ) -> TraceExpectation {
   let actual = trace_query_result(entries).kind_count(kind)
   {
@@ -230,24 +257,38 @@ pub fn expect_trace_kind_count(
 }
 
 ///|
-pub fn expect_trace_contains_kind(entries : Array[TraceEntry], kind : String) -> TraceExpectation {
+pub fn expect_trace_contains_kind(
+  entries : Array[TraceEntry],
+  kind : String,
+) -> TraceExpectation {
   let count = trace_query_result(entries).kind_count(kind)
   {
     passed: count > 0,
     label: "contains_kind:" + kind,
     expected: "present",
-    actual: if count > 0 { "present" } else { "missing" },
+    actual: if count > 0 {
+      "present"
+    } else {
+      "missing"
+    },
   }
 }
 
 ///|
-pub fn expect_trace_contains_detail(entries : Array[TraceEntry], detail : String) -> TraceExpectation {
+pub fn expect_trace_contains_detail(
+  entries : Array[TraceEntry],
+  detail : String,
+) -> TraceExpectation {
   let found = trace_filter_detail(entries, detail).length() > 0
   {
     passed: found,
     label: "contains_detail",
     expected: detail,
-    actual: if found { detail } else { "" },
+    actual: if found {
+      detail
+    } else {
+      ""
+    },
   }
 }
 
@@ -255,7 +296,7 @@ pub fn expect_trace_contains_detail(entries : Array[TraceEntry], detail : String
 pub fn expect_trace_order(
   entries : Array[TraceEntry],
   before_detail : String,
-  after_detail : String
+  after_detail : String,
 ) -> TraceExpectation {
   let before = trace_first_detail_index(entries, before_detail)
   let after = trace_first_detail_index(entries, after_detail)
@@ -269,7 +310,10 @@ pub fn expect_trace_order(
 }
 
 ///|
-fn trace_first_detail_index(entries : Array[TraceEntry], detail : String) -> Int {
+fn trace_first_detail_index(
+  entries : Array[TraceEntry],
+  detail : String,
+) -> Int {
   for i in 0..<entries.length() {
     if entries[i].detail.contains(detail) {
       return i
@@ -279,7 +323,9 @@ fn trace_first_detail_index(entries : Array[TraceEntry], detail : String) -> Int
 }
 
 ///|
-pub fn expect_trace_monotonic_ticks(entries : Array[TraceEntry]) -> TraceExpectation {
+pub fn expect_trace_monotonic_ticks(
+  entries : Array[TraceEntry],
+) -> TraceExpectation {
   let mut last = 0
   let mut seen = false
   for entry in entries {
@@ -294,11 +340,19 @@ pub fn expect_trace_monotonic_ticks(entries : Array[TraceEntry]) -> TraceExpecta
     last = entry.tick
     seen = true
   }
-  { passed: true, label: "monotonic_ticks", expected: "nondecreasing", actual: "nondecreasing" }
+  {
+    passed: true,
+    label: "monotonic_ticks",
+    expected: "nondecreasing",
+    actual: "nondecreasing",
+  }
 }
 
 ///|
-pub fn expect_trace_digest(entries : Array[TraceEntry], digest : UInt64) -> TraceExpectation {
+pub fn expect_trace_digest(
+  entries : Array[TraceEntry],
+  digest : UInt64,
+) -> TraceExpectation {
   let actual = trace_digest(entries)
   {
     passed: actual == digest,
@@ -309,8 +363,15 @@ pub fn expect_trace_digest(entries : Array[TraceEntry], digest : UInt64) -> Trac
 }
 
 ///|
-pub fn compare_traces(left : Array[TraceEntry], right : Array[TraceEntry]) -> TraceComparison {
-  let limit = if left.length() < right.length() { left.length() } else { right.length() }
+pub fn compare_traces(
+  left : Array[TraceEntry],
+  right : Array[TraceEntry],
+) -> TraceComparison {
+  let limit = if left.length() < right.length() {
+    left.length()
+  } else {
+    right.length()
+  }
   let mut i = 0
   while i < limit {
     let l = left[i].to_line()
@@ -363,8 +424,14 @@ pub fn replay_baseline(name : String, sim : Sim) -> ReplayBaseline {
 ///|
 pub fn compare_replay(baseline : ReplayBaseline, sim : Sim) -> ReplayComparison {
   let trace = compare_traces(baseline.entries, sim.trace())
-  let counter_mismatches = compare_counter_samples(baseline.counters, sim.metrics().snapshot())
-  let gauge_mismatches = compare_counter_samples(baseline.gauges, sim.metrics().gauge_snapshot())
+  let counter_mismatches = compare_counter_samples(
+    baseline.counters,
+    sim.metrics().snapshot(),
+  )
+  let gauge_mismatches = compare_counter_samples(
+    baseline.gauges,
+    sim.metrics().gauge_snapshot(),
+  )
   {
     name: baseline.name,
     matched: trace.matched && counter_mismatches == 0 && gauge_mismatches == 0,
@@ -375,7 +442,10 @@ pub fn compare_replay(baseline : ReplayBaseline, sim : Sim) -> ReplayComparison 
 }
 
 ///|
-fn compare_counter_samples(left : Array[CounterSample], right : Array[CounterSample]) -> Int {
+fn compare_counter_samples(
+  left : Array[CounterSample],
+  right : Array[CounterSample],
+) -> Int {
   let mut mismatches = 0
   for item in left {
     if find_counter_sample(right, item.name) != item.value {
@@ -413,22 +483,37 @@ fn has_counter_sample(items : Array[CounterSample], name : String) -> Bool {
 ///|
 pub fn ReplayComparison::summary(self : ReplayComparison) -> String {
   let status = if self.matched { "matched" } else { "mismatch" }
-  status + " " + self.name +
-  " trace=" + self.trace.summary() +
-  " counters=" + self.counter_mismatches.to_string() +
-  " gauges=" + self.gauge_mismatches.to_string()
+  status +
+  " " +
+  self.name +
+  " trace=" +
+  self.trace.summary() +
+  " counters=" +
+  self.counter_mismatches.to_string() +
+  " gauges=" +
+  self.gauge_mismatches.to_string()
 }
 
 ///|
 pub fn TraceComparison::summary(self : TraceComparison) -> String {
   if self.matched {
-    "matched checked=" + self.checked.to_string() + " digest=" + self.left_digest.to_string()
+    "matched checked=" +
+    self.checked.to_string() +
+    " digest=" +
+    self.left_digest.to_string()
   } else {
     match self.mismatch {
       None => "mismatch"
       Some(m) =>
-        "mismatch index=" + m.index.to_string() + " reason=" + m.reason +
-        " left=[" + m.left + "] right=[" + m.right + "]"
+        "mismatch index=" +
+        m.index.to_string() +
+        " reason=" +
+        m.reason +
+        " left=[" +
+        m.left +
+        "] right=[" +
+        m.right +
+        "]"
     }
   }
 }

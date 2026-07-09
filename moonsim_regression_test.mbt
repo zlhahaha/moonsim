@@ -117,7 +117,9 @@ test "regression trace compare empty matches" {
 test "regression mismatch summary for length differs" {
   let left = [@moonsim.trace_entry(0, 0, "a", "b")]
   let right : Array[@moonsim.TraceEntry] = []
-  assert_true(@moonsim.compare_traces(left, right).summary().contains("length differs"))
+  assert_true(
+    @moonsim.compare_traces(left, right).summary().contains("length differs"),
+  )
 }
 
 ///|
@@ -261,7 +263,12 @@ test "regression compare equal forks can match" {
 
 ///|
 test "regression backoff normalizes invalid config" {
-  let backoff = @moonsim.Backoff::new(initial=-1, factor=0, max_delay=0, jitter=-1)
+  let backoff = @moonsim.Backoff::new(
+    initial=-1,
+    factor=0,
+    max_delay=0,
+    jitter=-1,
+  )
   let rng = @moonsim.Rng::new(1UL)
   assert_eq(backoff.next_delay(rng), 1)
 }
@@ -355,7 +362,9 @@ test "regression run until tick max steps wins" {
 
 ///|
 test "regression trace stats sees message class" {
-  let stats = @moonsim.trace_stats([@moonsim.trace_entry(0, 0, "message.send", "a")])
+  let stats = @moonsim.trace_stats([
+    @moonsim.trace_entry(0, 0, "message.send", "a"),
+  ])
   assert_eq(stats.messages, 1)
 }
 
@@ -472,7 +481,9 @@ test "model retry succeeds after configured failures" {
 
 ///|
 test "model retry can exhaust attempts" {
-  let result = @moonsim.run_retry_model(@moonsim.retry_config(max_attempts=2, fail_until=5))
+  let result = @moonsim.run_retry_model(
+    @moonsim.retry_config(max_attempts=2, fail_until=5),
+  )
   assert_eq(result.success, false)
   assert_eq(result.attempts, 2)
 }
@@ -486,7 +497,9 @@ test "model traffic produces configured cars" {
 
 ///|
 test "model summaries render stable lines" {
-  let queue = @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1)))
+  let queue = @moonsim.queue_summary(
+    @moonsim.run_queue_model(@moonsim.queue_config(customers=1)),
+  )
   assert_true(queue.line().contains("queue tick="))
 }
 
@@ -527,8 +540,12 @@ test "report renders scenario failure" {
 ///|
 test "report renders model summaries" {
   let summaries = [
-    @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1))),
-    @moonsim.retry_summary(@moonsim.run_retry_model(@moonsim.retry_config(fail_until=0))),
+    @moonsim.queue_summary(
+      @moonsim.run_queue_model(@moonsim.queue_config(customers=1)),
+    ),
+    @moonsim.retry_summary(
+      @moonsim.run_retry_model(@moonsim.retry_config(fail_until=0)),
+    ),
   ]
   let text = @moonsim.render_model_summaries(summaries)
   assert_true(text.contains("Model Summaries"))
@@ -627,11 +644,14 @@ test "experiment comparison matches identical reports" {
 ///|
 test "experiment comparison detects changed cases" {
   let left = @moonsim.demo_experiment()
-  let right = @moonsim.ExperimentReport::new("small")
-    .add(@moonsim.experiment_case(
+  let right = @moonsim.ExperimentReport::new("small").add(
+    @moonsim.experiment_case(
       "queue",
-      @moonsim.queue_summary(@moonsim.run_queue_model(@moonsim.queue_config(customers=1))),
-    ))
+      @moonsim.queue_summary(
+        @moonsim.run_queue_model(@moonsim.queue_config(customers=1)),
+      ),
+    ),
+  )
   assert_eq(@moonsim.compare_experiments(left, right).matched, false)
 }
 
@@ -646,7 +666,9 @@ test "feature matrix includes demos and features" {
   let matrix = @moonsim.build_feature_matrix()
   assert_true(matrix.demos.length() >= 9)
   assert_true(matrix.features.length() >= 10)
-  assert_true(matrix.cells.length() >= matrix.demos.length() * matrix.features.length())
+  assert_true(
+    matrix.cells.length() >= matrix.demos.length() * matrix.features.length(),
+  )
 }
 
 ///|
@@ -705,7 +727,10 @@ test "trace query filters by kind detail and tick range" {
   assert_eq(@moonsim.trace_filter_kind(entries, "execute").length(), 2)
   assert_eq(@moonsim.trace_filter_detail(entries, "beta").length(), 1)
   assert_eq(@moonsim.trace_filter_tick_range(entries, 1, 3).length(), 1)
-  let result = @moonsim.query_trace(entries, @moonsim.trace_query(kind="execute"))
+  let result = @moonsim.query_trace(
+    entries,
+    @moonsim.trace_query(kind="execute"),
+  )
   assert_eq(result.kind_count("execute"), 2)
   assert_true(result.summary().contains("last_tick=5"))
 }
@@ -716,12 +741,27 @@ test "trace expectations describe replayable properties" {
     @moonsim.trace_entry(0, 1, "schedule", "first"),
     @moonsim.trace_entry(1, 1, "execute", "first"),
   ]
-  assert_eq(@moonsim.expect_trace_contains_kind(entries, "execute").passed, true)
-  assert_eq(@moonsim.expect_trace_kind_count(entries, "execute", 1).passed, true)
-  assert_eq(@moonsim.expect_trace_contains_detail(entries, "first").passed, true)
-  assert_eq(@moonsim.expect_trace_order(entries, "schedule", "first").passed, false)
+  assert_eq(
+    @moonsim.expect_trace_contains_kind(entries, "execute").passed,
+    true,
+  )
+  assert_eq(
+    @moonsim.expect_trace_kind_count(entries, "execute", 1).passed,
+    true,
+  )
+  assert_eq(
+    @moonsim.expect_trace_contains_detail(entries, "first").passed,
+    true,
+  )
+  assert_eq(
+    @moonsim.expect_trace_order(entries, "schedule", "first").passed,
+    false,
+  )
   assert_eq(@moonsim.expect_trace_monotonic_ticks(entries).passed, true)
-  assert_eq(@moonsim.expect_trace_digest(entries, @moonsim.trace_digest(entries)).passed, true)
+  assert_eq(
+    @moonsim.expect_trace_digest(entries, @moonsim.trace_digest(entries)).passed,
+    true,
+  )
 }
 
 ///|
@@ -825,7 +865,11 @@ test "sample distribution is deterministic" {
   assert_eq(dist.max, 20)
   assert_eq(dist.median, 10)
   assert_eq(dist.p90, 10)
-  assert_true(@moonsim.render_sample_distribution(metrics, "latency").contains("median=10"))
+  assert_true(
+    @moonsim.render_sample_distribution(metrics, "latency").contains(
+      "median=10",
+    ),
+  )
 }
 
 ///|
@@ -835,14 +879,21 @@ test "report renders metric diff and replay comparison" {
   let baseline = @moonsim.replay_baseline("report", sim)
   let comparison = @moonsim.compare_replay(baseline, sim)
   let diff = sim.metrics().diff_from(@moonsim.Metrics::new().metric_snapshot())
-  assert_true(@moonsim.render_replay_comparison(comparison).contains("# Replay"))
+  assert_true(
+    @moonsim.render_replay_comparison(comparison).contains("# Replay"),
+  )
   assert_true(@moonsim.render_metric_diff(diff).contains("# Metric Diff"))
   assert_true(@moonsim.render_sim_report(sim).contains("validation: PASS sim"))
 }
 
 ///|
 test "network model is deterministic and drains pending messages" {
-  let config = @moonsim.network_config(seed=707UL, messages=8, drop_percent=25, retry_delay=3)
+  let config = @moonsim.network_config(
+    seed=707UL,
+    messages=8,
+    drop_percent=25,
+    retry_delay=3,
+  )
   let left = @moonsim.run_network_model(config)
   let right = @moonsim.run_network_model(config)
   assert_eq(left.digest, right.digest)
@@ -855,39 +906,46 @@ test "network model is deterministic and drains pending messages" {
 
 ///|
 test "network model records retry and message trace kinds" {
-  let result = @moonsim.run_network_model(@moonsim.network_config(
-    seed=1UL,
-    messages=5,
-    drop_percent=100,
-  ))
+  let result = @moonsim.run_network_model(
+    @moonsim.network_config(seed=1UL, messages=5, drop_percent=100),
+  )
   assert_eq(result.dropped, 5)
   assert_eq(result.retries, 5)
-  assert_true(@moonsim.expect_trace_contains_kind(result.trace, "message.drop").passed)
-  assert_true(@moonsim.expect_trace_contains_kind(result.trace, "message.send").passed)
+  assert_true(
+    @moonsim.expect_trace_contains_kind(result.trace, "message.drop").passed,
+  )
+  assert_true(
+    @moonsim.expect_trace_contains_kind(result.trace, "message.send").passed,
+  )
 }
 
 ///|
 test "load balancer model is deterministic for same strategy" {
-  let config = @moonsim.load_balancer_config(seed=808UL, jobs=12, workers=3, strategy="least_queue")
+  let config = @moonsim.load_balancer_config(
+    seed=808UL,
+    jobs=12,
+    workers=3,
+    strategy="least_queue",
+  )
   let left = @moonsim.run_load_balancer_model(config)
   let right = @moonsim.run_load_balancer_model(config)
   assert_eq(left.digest, right.digest)
   assert_eq(left.jobs, 12)
   assert_eq(left.workers, 3)
   assert_true(left.events_executed >= 36)
-  assert_true(@moonsim.load_balancer_summary(left).line().contains("load_balancer"))
+  assert_true(
+    @moonsim.load_balancer_summary(left).line().contains("load_balancer"),
+  )
 }
 
 ///|
 test "load balancer strategies can produce different digests" {
-  let least = @moonsim.run_load_balancer_model(@moonsim.load_balancer_config(
-    seed=808UL,
-    strategy="least_queue",
-  ))
-  let random = @moonsim.run_load_balancer_model(@moonsim.load_balancer_config(
-    seed=808UL,
-    strategy="random",
-  ))
+  let least = @moonsim.run_load_balancer_model(
+    @moonsim.load_balancer_config(seed=808UL, strategy="least_queue"),
+  )
+  let random = @moonsim.run_load_balancer_model(
+    @moonsim.load_balancer_config(seed=808UL, strategy="random"),
+  )
   assert_true(least.digest != random.digest)
   assert_eq(least.strategy, "least_queue")
   assert_eq(random.strategy, "random")
@@ -951,8 +1009,7 @@ test "workflow model respects dependencies and workers" {
 
 ///|
 test "workflow validation catches bad dependency" {
-  let plan = @moonsim.WorkflowPlan::new()
-    .add("bad", 1, deps=[9])
+  let plan = @moonsim.WorkflowPlan::new().add("bad", 1, deps=[9])
   let report = plan.validate()
   assert_eq(report.passed(), false)
   assert_true(report.text().contains("bad-workflow-dependency"))
@@ -972,7 +1029,12 @@ test "workflow model is deterministic" {
 
 ///|
 test "reliability model is deterministic" {
-  let config = @moonsim.reliability_config(seed=44UL, operations=8, fail_percent=35, retry_limit=2)
+  let config = @moonsim.reliability_config(
+    seed=44UL,
+    operations=8,
+    fail_percent=35,
+    retry_limit=2,
+  )
   let left = @moonsim.run_reliability_model(config)
   let right = @moonsim.run_reliability_model(config)
   assert_eq(left.digest, right.digest)
@@ -983,15 +1045,15 @@ test "reliability model is deterministic" {
 
 ///|
 test "reliability model handles guaranteed failure" {
-  let result = @moonsim.run_reliability_model(@moonsim.reliability_config(
-    operations=3,
-    fail_percent=100,
-    retry_limit=1,
-  ))
+  let result = @moonsim.run_reliability_model(
+    @moonsim.reliability_config(operations=3, fail_percent=100, retry_limit=1),
+  )
   assert_eq(result.successes, 0)
   assert_eq(result.exhausted, 3)
   assert_eq(result.retries, 3)
-  assert_true(@moonsim.expect_trace_contains_kind(result.trace, "rng.int").passed)
+  assert_true(
+    @moonsim.expect_trace_contains_kind(result.trace, "rng.int").passed,
+  )
 }
 
 ///|
@@ -1022,7 +1084,10 @@ test "circuit breaker rejects while open" {
   let sim = @moonsim.Sim::new()
   let breaker = @moonsim.CircuitBreaker::new(
     "svc",
-    config=@moonsim.circuit_breaker_config(failure_threshold=1, reset_timeout=10),
+    config=@moonsim.circuit_breaker_config(
+      failure_threshold=1,
+      reset_timeout=10,
+    ),
   )
   assert_eq(breaker.allow(sim), true)
   breaker.record_failure(sim)
@@ -1043,7 +1108,12 @@ test "token bucket model is deterministic" {
 ///|
 test "token bucket refills and rejects deterministically" {
   let sim = @moonsim.Sim::new()
-  let bucket = @moonsim.TokenBucket::new("api", capacity=2, refill=1, interval=2)
+  let bucket = @moonsim.TokenBucket::new(
+    "api",
+    capacity=2,
+    refill=1,
+    interval=2,
+  )
   assert_eq(bucket.allow(sim), true)
   assert_eq(bucket.allow(sim), true)
   assert_eq(bucket.allow(sim), false)
@@ -1059,7 +1129,10 @@ test "sweep report compares scores and digest is stable" {
   let report = @moonsim.sweep_load_balancer_strategies(seed=808UL, jobs=12)
   assert_eq(report.count(), 3)
   assert_true(report.best_by_score() is Some(_))
-  assert_eq(report.combined_digest(), @moonsim.sweep_load_balancer_strategies(seed=808UL, jobs=12).combined_digest())
+  assert_eq(
+    report.combined_digest(),
+    @moonsim.sweep_load_balancer_strategies(seed=808UL, jobs=12).combined_digest(),
+  )
   assert_true(report.render().contains("best_score="))
 }
 
@@ -1086,8 +1159,9 @@ test "invariant report aggregates checks" {
 ///|
 test "invariant report records failures" {
   let sim = @moonsim.Sim::new()
-  let report = @moonsim.InvariantReport::new("custom")
-    .add(@moonsim.check_counter_at_least(sim, "missing", 1))
+  let report = @moonsim.InvariantReport::new("custom").add(
+    @moonsim.check_counter_at_least(sim, "missing", 1),
+  )
   assert_eq(report.passed(), false)
   assert_eq(report.failed_count(), 1)
   assert_eq(report.passed_count(), 0)
@@ -1100,10 +1174,12 @@ test "invariant report records failures" {
 
 ///|
 test "invariant reports can merge" {
-  let left = @moonsim.InvariantReport::new("left")
-    .add(@moonsim.invariant_check("a", true))
-  let right = @moonsim.InvariantReport::new("right")
-    .add(@moonsim.invariant_check("b", false))
+  let left = @moonsim.InvariantReport::new("left").add(
+    @moonsim.invariant_check("a", true),
+  )
+  let right = @moonsim.InvariantReport::new("right").add(
+    @moonsim.invariant_check("b", false),
+  )
   let merged = left.merge(right)
   assert_eq(merged.checks.length(), 2)
   assert_eq(merged.failed_count(), 1)
@@ -1123,7 +1199,10 @@ test "seed matrix aggregates retry runs" {
   assert_eq(matrix.lines().length(), 3)
   assert_true(matrix.render().contains("Seed Matrix retry"))
   assert_true(matrix.summary_line().contains("unique_digests="))
-  assert_eq(matrix.combined_digest(), @moonsim.retry_seed_matrix([1UL, 2UL, 3UL]).combined_digest())
+  assert_eq(
+    matrix.combined_digest(),
+    @moonsim.retry_seed_matrix([1UL, 2UL, 3UL]).combined_digest(),
+  )
 }
 
 ///|

@@ -41,13 +41,17 @@ pub fn WorkflowPlan::add(
   self : WorkflowPlan,
   name : String,
   duration : Int,
-  deps? : Array[Int] = []
+  deps? : Array[Int] = [],
 ) -> WorkflowPlan {
   let id = self.tasks.length() + 1
   self.tasks.push({
     id,
     name,
-    duration: if duration < 1 { 1 } else { duration },
+    duration: if duration < 1 {
+      1
+    } else {
+      duration
+    },
     deps,
   })
   self
@@ -64,10 +68,18 @@ pub fn WorkflowPlan::validate(self : WorkflowPlan) -> ValidationReport {
   for task in self.tasks {
     for dep in task.deps {
       if dep < 1 || dep > self.tasks.length() {
-        issues.push(validation_issue("bad-workflow-dependency", "dependency id is out of range"))
+        issues.push(
+          validation_issue(
+            "bad-workflow-dependency", "dependency id is out of range",
+          ),
+        )
       }
       if dep == task.id {
-        issues.push(validation_issue("self-workflow-dependency", "task cannot depend on itself"))
+        issues.push(
+          validation_issue(
+            "self-workflow-dependency", "task cannot depend on itself",
+          ),
+        )
       }
     }
   }
@@ -75,7 +87,10 @@ pub fn WorkflowPlan::validate(self : WorkflowPlan) -> ValidationReport {
 }
 
 ///|
-pub fn run_workflow_model(plan : WorkflowPlan, seed? : UInt64 = 515UL) -> WorkflowResult {
+pub fn run_workflow_model(
+  plan : WorkflowPlan,
+  seed? : UInt64 = 515UL,
+) -> WorkflowResult {
   let sim = Sim::new(seed~)
   let worker_available : Array[Int] = []
   let completed : Array[Int] = []
@@ -86,11 +101,21 @@ pub fn run_workflow_model(plan : WorkflowPlan, seed? : UInt64 = 515UL) -> Workfl
   for task in plan.tasks {
     let ready = workflow_ready_tick(task, runs)
     let worker = workflow_choose_worker(worker_available)
-    let start = if worker_available[worker] > ready { worker_available[worker] } else { ready }
+    let start = if worker_available[worker] > ready {
+      worker_available[worker]
+    } else {
+      ready
+    }
     let finish = start + task.duration
     worker_available[worker] = finish
     completed.push(task.id)
-    runs.push({ id: task.id, name: task.name, worker, start_tick: start, finish_tick: finish })
+    runs.push({
+      id: task.id,
+      name: task.name,
+      worker,
+      start_tick: start,
+      finish_tick: finish,
+    })
     ignore(sim.schedule_at(start, "workflow:" + task.name + ":start"))
     ignore(sim.schedule_at(finish, "workflow:" + task.name + ":finish"))
     sim.inc_counter("workflow_tasks")
@@ -109,7 +134,10 @@ pub fn run_workflow_model(plan : WorkflowPlan, seed? : UInt64 = 515UL) -> Workfl
 }
 
 ///|
-fn workflow_ready_tick(task : WorkflowTask, runs : Array[WorkflowTaskRun]) -> Int {
+fn workflow_ready_tick(
+  task : WorkflowTask,
+  runs : Array[WorkflowTaskRun],
+) -> Int {
   let mut ready = 0
   for dep in task.deps {
     for run in runs {
@@ -175,10 +203,15 @@ pub fn WorkflowResult::render(self : WorkflowResult) -> String {
   buf.write_string("critical_path=" + self.critical_path.to_string() + "\n")
   for run in self.runs {
     buf.write_string(
-      "- " + run.name +
-      " worker=" + run.worker.to_string() +
-      " start=" + run.start_tick.to_string() +
-      " finish=" + run.finish_tick.to_string() + "\n",
+      "- " +
+      run.name +
+      " worker=" +
+      run.worker.to_string() +
+      " start=" +
+      run.start_tick.to_string() +
+      " finish=" +
+      run.finish_tick.to_string() +
+      "\n",
     )
   }
   buf.to_string()

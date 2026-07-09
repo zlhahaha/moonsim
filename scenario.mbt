@@ -50,12 +50,20 @@ pub(all) struct ScenarioSuiteReport {
 }
 
 ///|
-pub fn Scenario::new(name : String, seed? : UInt64 = 1UL, max_steps? : Int = 100000) -> Scenario {
+pub fn Scenario::new(
+  name : String,
+  seed? : UInt64 = 1UL,
+  max_steps? : Int = 100000,
+) -> Scenario {
   { name, seed, max_steps, expectations: [] }
 }
 
 ///|
-pub fn Scenario::expect_counter(self : Scenario, name : String, value : Int) -> Scenario {
+pub fn Scenario::expect_counter(
+  self : Scenario,
+  name : String,
+  value : Int,
+) -> Scenario {
   self.expectations.push({ kind: "counter", name, expected: value.to_string() })
   self
 }
@@ -65,69 +73,136 @@ pub fn Scenario::expect_counter_range(
   self : Scenario,
   name : String,
   min : Int,
-  max : Int
+  max : Int,
 ) -> Scenario {
-  self.expectations.push({ kind: "counter_range", name, expected: min.to_string() + ".." + max.to_string() })
+  self.expectations.push({
+    kind: "counter_range",
+    name,
+    expected: min.to_string() + ".." + max.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_gauge(self : Scenario, name : String, value : Int) -> Scenario {
+pub fn Scenario::expect_gauge(
+  self : Scenario,
+  name : String,
+  value : Int,
+) -> Scenario {
   self.expectations.push({ kind: "gauge", name, expected: value.to_string() })
   self
 }
 
 ///|
 pub fn Scenario::expect_final_tick(self : Scenario, value : Int) -> Scenario {
-  self.expectations.push({ kind: "final_tick", name: "time", expected: value.to_string() })
+  self.expectations.push({
+    kind: "final_tick",
+    name: "time",
+    expected: value.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_final_tick_range(self : Scenario, min : Int, max : Int) -> Scenario {
-  self.expectations.push({ kind: "final_tick_range", name: "time", expected: min.to_string() + ".." + max.to_string() })
+pub fn Scenario::expect_final_tick_range(
+  self : Scenario,
+  min : Int,
+  max : Int,
+) -> Scenario {
+  self.expectations.push({
+    kind: "final_tick_range",
+    name: "time",
+    expected: min.to_string() + ".." + max.to_string(),
+  })
   self
 }
 
 ///|
 pub fn Scenario::expect_pending(self : Scenario, value : Int) -> Scenario {
-  self.expectations.push({ kind: "pending", name: "events", expected: value.to_string() })
+  self.expectations.push({
+    kind: "pending",
+    name: "events",
+    expected: value.to_string(),
+  })
   self
 }
 
 ///|
 pub fn Scenario::expect_digest(self : Scenario, value : UInt64) -> Scenario {
-  self.expectations.push({ kind: "digest", name: "trace", expected: value.to_string() })
+  self.expectations.push({
+    kind: "digest",
+    name: "trace",
+    expected: value.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_trace_contains(self : Scenario, text : String) -> Scenario {
-  self.expectations.push({ kind: "trace_contains", name: "trace", expected: text })
+pub fn Scenario::expect_trace_contains(
+  self : Scenario,
+  text : String,
+) -> Scenario {
+  self.expectations.push({
+    kind: "trace_contains",
+    name: "trace",
+    expected: text,
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_trace_kind_count(self : Scenario, kind : String, count : Int) -> Scenario {
-  self.expectations.push({ kind: "trace_kind_count", name: kind, expected: count.to_string() })
+pub fn Scenario::expect_trace_kind_count(
+  self : Scenario,
+  kind : String,
+  count : Int,
+) -> Scenario {
+  self.expectations.push({
+    kind: "trace_kind_count",
+    name: kind,
+    expected: count.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_sample_count(self : Scenario, name : String, value : Int) -> Scenario {
-  self.expectations.push({ kind: "sample_count", name, expected: value.to_string() })
+pub fn Scenario::expect_sample_count(
+  self : Scenario,
+  name : String,
+  value : Int,
+) -> Scenario {
+  self.expectations.push({
+    kind: "sample_count",
+    name,
+    expected: value.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_summary_min(self : Scenario, name : String, value : Int) -> Scenario {
-  self.expectations.push({ kind: "summary_min", name, expected: value.to_string() })
+pub fn Scenario::expect_summary_min(
+  self : Scenario,
+  name : String,
+  value : Int,
+) -> Scenario {
+  self.expectations.push({
+    kind: "summary_min",
+    name,
+    expected: value.to_string(),
+  })
   self
 }
 
 ///|
-pub fn Scenario::expect_summary_max(self : Scenario, name : String, value : Int) -> Scenario {
-  self.expectations.push({ kind: "summary_max", name, expected: value.to_string() })
+pub fn Scenario::expect_summary_max(
+  self : Scenario,
+  name : String,
+  value : Int,
+) -> Scenario {
+  self.expectations.push({
+    kind: "summary_max",
+    name,
+    expected: value.to_string(),
+  })
   self
 }
 
@@ -136,9 +211,13 @@ pub fn Scenario::expect_summary_average_range(
   self : Scenario,
   name : String,
   min : Int,
-  max : Int
+  max : Int,
 ) -> Scenario {
-  self.expectations.push({ kind: "summary_average_range", name, expected: min.to_string() + ".." + max.to_string() })
+  self.expectations.push({
+    kind: "summary_average_range",
+    name,
+    expected: min.to_string() + ".." + max.to_string(),
+  })
   self
 }
 
@@ -178,28 +257,36 @@ fn Scenario::check_expectation(
   _self : Scenario,
   expectation : ScenarioExpectation,
   sim : Sim,
-  report : ScenarioReport
+  report : ScenarioReport,
 ) -> Unit {
   let actual = match expectation.kind {
     "counter" => sim.metrics().counter(expectation.name).to_string()
-    "counter_range" => range_actual(
-      sim.metrics().counter(expectation.name),
-      expectation.expected,
-    )
+    "counter_range" =>
+      range_actual(
+        sim.metrics().counter(expectation.name),
+        expectation.expected,
+      )
     "gauge" => sim.metrics().gauge(expectation.name).to_string()
     "final_tick" => sim.time().to_string()
     "final_tick_range" => range_actual(sim.time(), expectation.expected)
     "pending" => sim.pending_count().to_string()
     "digest" => sim.digest().to_string()
-    "trace_contains" => if sim.trace_text().contains(expectation.expected) { expectation.expected } else { "" }
-    "trace_kind_count" => trace_query_result(sim.trace()).kind_count(expectation.name).to_string()
+    "trace_contains" =>
+      if sim.trace_text().contains(expectation.expected) {
+        expectation.expected
+      } else {
+        ""
+      }
+    "trace_kind_count" =>
+      trace_query_result(sim.trace()).kind_count(expectation.name).to_string()
     "sample_count" => sim.metrics().sample_count(expectation.name).to_string()
     "summary_min" => sim.metrics().summary(expectation.name).min.to_string()
     "summary_max" => sim.metrics().summary(expectation.name).max.to_string()
-    "summary_average_range" => range_actual(
-      sim.metrics().summary(expectation.name).average().to_int(),
-      expectation.expected,
-    )
+    "summary_average_range" =>
+      range_actual(
+        sim.metrics().summary(expectation.name).average().to_int(),
+        expectation.expected,
+      )
     "validation" => if sim.validate().passed() { "PASS" } else { "FAIL" }
     _ => ""
   }
@@ -269,8 +356,15 @@ fn parse_int_slice(text : String, start : Int, end : Int) -> Int {
 ///|
 pub fn ScenarioReport::summary(self : ScenarioReport) -> String {
   let status = if self.passed { "PASS" } else { "FAIL" }
-  status + " " + self.name + " steps=" + self.steps.to_string() +
-  " tick=" + self.final_tick.to_string() + " digest=" + self.digest.to_string()
+  status +
+  " " +
+  self.name +
+  " steps=" +
+  self.steps.to_string() +
+  " tick=" +
+  self.final_tick.to_string() +
+  " digest=" +
+  self.digest.to_string()
 }
 
 ///|
@@ -282,8 +376,13 @@ pub fn ScenarioReport::failure_text(self : ScenarioReport) -> String {
     }
     let failure = self.failures[i]
     buf.write_string(
-      failure.kind + ":" + failure.name + " expected=" + failure.expected +
-      " actual=" + failure.actual,
+      failure.kind +
+      ":" +
+      failure.name +
+      " expected=" +
+      failure.expected +
+      " actual=" +
+      failure.actual,
     )
   }
   buf.to_string()
@@ -310,7 +409,11 @@ pub fn ScenarioSuite::new(name : String) -> ScenarioSuite {
 }
 
 ///|
-pub fn ScenarioSuite::add(self : ScenarioSuite, scenario : Scenario, sim : Sim) -> ScenarioSuite {
+pub fn ScenarioSuite::add(
+  self : ScenarioSuite,
+  scenario : Scenario,
+  sim : Sim,
+) -> ScenarioSuite {
   self.cases.push({ scenario, sim })
   self
 }
@@ -348,9 +451,13 @@ pub fn ScenarioSuiteReport::failed_count(self : ScenarioSuiteReport) -> Int {
 ///|
 pub fn ScenarioSuiteReport::summary(self : ScenarioSuiteReport) -> String {
   let status = if self.passed() { "PASS" } else { "FAIL" }
-  status + " suite=" + self.name +
-  " passed=" + self.passed_count().to_string() +
-  " failed=" + self.failed_count().to_string()
+  status +
+  " suite=" +
+  self.name +
+  " passed=" +
+  self.passed_count().to_string() +
+  " failed=" +
+  self.failed_count().to_string()
 }
 
 ///|

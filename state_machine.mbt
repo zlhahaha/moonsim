@@ -25,7 +25,12 @@ pub(all) struct StateMachine {
 }
 
 ///|
-pub fn transition(from : String, event : String, to : String, action? : String = "") -> Transition {
+pub fn transition(
+  from : String,
+  event : String,
+  to : String,
+  action? : String = "",
+) -> Transition {
   { from, event, to, action }
 }
 
@@ -35,7 +40,10 @@ pub fn StateMachine::new(name : String, initial : String) -> StateMachine {
 }
 
 ///|
-pub fn StateMachine::add(self : StateMachine, transition : Transition) -> StateMachine {
+pub fn StateMachine::add(
+  self : StateMachine,
+  transition : Transition,
+) -> StateMachine {
   self.transitions.push(transition)
   self
 }
@@ -46,7 +54,10 @@ pub fn StateMachine::state(self : StateMachine) -> String {
 }
 
 ///|
-pub fn StateMachine::send(self : StateMachine, event : String) -> TransitionResult {
+pub fn StateMachine::send(
+  self : StateMachine,
+  event : String,
+) -> TransitionResult {
   for transition in self.transitions {
     if transition.from == self.state && transition.event == event {
       let from = self.state
@@ -81,12 +92,24 @@ pub fn StateMachine::history(self : StateMachine) -> Array[TransitionResult] {
 }
 
 ///|
-pub fn Sim::record_transition(self : Sim, machine : StateMachine, result : TransitionResult) -> Unit {
+pub fn Sim::record_transition(
+  self : Sim,
+  machine : StateMachine,
+  result : TransitionResult,
+) -> Unit {
   let status = if result.accepted { "accepted" } else { "rejected" }
   self.record(
     0,
     "state.transition",
-    machine.name + ":" + result.from + "-" + result.event + "->" + result.to + ":" + status,
+    machine.name +
+    ":" +
+    result.from +
+    "-" +
+    result.event +
+    "->" +
+    result.to +
+    ":" +
+    status,
   )
   if result.accepted {
     self.inc_counter("state.accepted")

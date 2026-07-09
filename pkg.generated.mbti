@@ -1,0 +1,1024 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zlhahaha/moonsim"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn build_feature_matrix() -> FeatureMatrix
+
+pub fn build_timeline(Array[TraceEntry], bucket_size? : Int) -> TimelineView
+
+pub fn check_counter_at_least(Sim, String, Int) -> InvariantCheck
+
+pub fn check_no_pending(Sim) -> InvariantCheck
+
+pub fn check_sim_invariants(Sim) -> InvariantReport
+
+pub fn circuit_breaker_config(failure_threshold? : Int, reset_timeout? : Int, half_open_successes? : Int) -> CircuitBreakerConfig
+
+pub fn compare_event(ScheduledEvent, ScheduledEvent) -> Int
+
+pub fn compare_experiments(ExperimentReport, ExperimentReport) -> TraceComparison
+
+pub fn compare_forks(String, Sim, String, Sim) -> ForkComparison
+
+pub fn compare_replay(ReplayBaseline, Sim) -> ReplayComparison
+
+pub fn compare_seed_matrices(SeedMatrix, SeedMatrix) -> SeedMatrixComparison
+
+pub fn compare_traces(Array[TraceEntry], Array[TraceEntry]) -> TraceComparison
+
+pub fn default_features() -> Array[String]
+
+pub fn demo_catalog() -> Array[DemoDescriptor]
+
+pub fn demo_descriptor(String, String, String, Array[String]) -> DemoDescriptor
+
+pub fn demo_experiment() -> ExperimentReport
+
+pub fn demo_names() -> Array[String]
+
+pub fn diff_metrics(MetricSnapshot, MetricSnapshot) -> MetricDiff
+
+pub fn duration(Int) -> Duration
+
+pub fn event_id(Int) -> EventId
+
+pub fn expect_trace_contains_detail(Array[TraceEntry], String) -> TraceExpectation
+
+pub fn expect_trace_contains_kind(Array[TraceEntry], String) -> TraceExpectation
+
+pub fn expect_trace_digest(Array[TraceEntry], UInt64) -> TraceExpectation
+
+pub fn expect_trace_kind_count(Array[TraceEntry], String, Int) -> TraceExpectation
+
+pub fn expect_trace_monotonic_ticks(Array[TraceEntry]) -> TraceExpectation
+
+pub fn expect_trace_order(Array[TraceEntry], String, String) -> TraceExpectation
+
+pub fn experiment_case(String, ModelSummary, notes? : String) -> ExperimentCase
+
+pub fn find_demo(String) -> DemoDescriptor?
+
+pub fn invariant_check(String, Bool, detail? : String) -> InvariantCheck
+
+pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> LoadBalancerConfig
+
+pub fn load_balancer_seed_matrix(Array[UInt64], strategy? : String) -> SeedMatrix
+
+pub fn load_balancer_summary(LoadBalancerResult) -> ModelSummary
+
+pub fn metrics_counter_delta(Metrics, Metrics, String) -> Int
+
+pub fn network_config(seed? : UInt64, messages? : Int, latency_min? : Int, latency_max? : Int, drop_percent? : Int, retry_delay? : Int) -> NetworkConfig
+
+pub fn network_seed_matrix(Array[UInt64]) -> SeedMatrix
+
+pub fn network_summary(NetworkResult) -> ModelSummary
+
+pub fn query_trace(Array[TraceEntry], TraceQuery) -> TraceQueryResult
+
+pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> QueueConfig
+
+pub fn queue_summary(QueueResult) -> ModelSummary
+
+pub fn reliability_config(seed? : UInt64, operations? : Int, fail_percent? : Int, retry_limit? : Int, backoff? : Int) -> ReliabilityConfig
+
+pub fn render_demo_catalog() -> String
+
+pub fn render_experiment_report(ExperimentReport) -> String
+
+pub fn render_feature_coverage() -> String
+
+pub fn render_feature_matrix() -> String
+
+pub fn render_metric_diff(MetricDiff) -> String
+
+pub fn render_metrics_report(Metrics) -> String
+
+pub fn render_model_summaries(Array[ModelSummary]) -> String
+
+pub fn render_replay_comparison(ReplayComparison) -> String
+
+pub fn render_sample_distribution(Metrics, String) -> String
+
+pub fn render_scenario_report(ScenarioReport) -> String
+
+pub fn render_scenario_suite_report(ScenarioSuiteReport) -> String
+
+pub fn render_sim_report(Sim, title? : String) -> String
+
+pub fn render_trace_report(Array[TraceEntry], limit? : Int) -> String
+
+pub fn replay_baseline(String, Sim) -> ReplayBaseline
+
+pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, initial_backoff? : Int, jitter? : Int) -> RetryConfig
+
+pub fn retry_seed_matrix(Array[UInt64]) -> SeedMatrix
+
+pub fn retry_summary(RetryResult) -> ModelSummary
+
+pub fn run_circuit_breaker_model(seed? : UInt64, calls? : Int) -> CircuitBreakerResult
+
+pub fn run_load_balancer_model(LoadBalancerConfig) -> LoadBalancerResult
+
+pub fn run_network_model(NetworkConfig) -> NetworkResult
+
+pub fn run_queue_model(QueueConfig) -> QueueResult
+
+pub fn run_reliability_model(ReliabilityConfig) -> ReliabilityResult
+
+pub fn run_retry_model(RetryConfig) -> RetryResult
+
+pub fn run_token_bucket_model(seed? : UInt64, requests? : Int) -> TokenBucketResult
+
+pub fn run_traffic_model(TrafficConfig) -> TrafficResult
+
+pub fn run_workflow_model(WorkflowPlan, seed? : UInt64) -> WorkflowResult
+
+pub fn seed_run(UInt64, ModelSummary) -> SeedRun
+
+pub fn sweep_load_balancer_strategies(seed? : UInt64, jobs? : Int) -> SweepReport
+
+pub fn sweep_point(String, ModelSummary, score? : Int) -> SweepPoint
+
+pub fn sweep_reliability_failure_rates(seed? : UInt64) -> SweepReport
+
+pub fn tick(Int) -> Tick
+
+pub fn timer_plan(String, start_after? : Int, interval? : Int, times? : Int, priority? : Int) -> TimerPlan
+
+pub fn trace_digest(Array[TraceEntry]) -> UInt64
+
+pub fn trace_entry(Int, Int, String, String) -> TraceEntry
+
+pub fn trace_filter_detail(Array[TraceEntry], String) -> Array[TraceEntry]
+
+pub fn trace_filter_kind(Array[TraceEntry], String) -> Array[TraceEntry]
+
+pub fn trace_filter_tick_range(Array[TraceEntry], Int, Int) -> Array[TraceEntry]
+
+pub fn trace_query(kind? : String, detail? : String, min_tick? : Int, max_tick? : Int) -> TraceQuery
+
+pub fn trace_query_result(Array[TraceEntry]) -> TraceQueryResult
+
+pub fn trace_stats(Array[TraceEntry]) -> TraceStats
+
+pub fn trace_to_text(Array[TraceEntry]) -> String
+
+pub fn traffic_config(seed? : UInt64, cycles? : Int, cars? : Int, cycle_ticks? : Int) -> TrafficConfig
+
+pub fn traffic_summary(TrafficResult) -> ModelSummary
+
+pub fn transition(String, String, String, action? : String) -> Transition
+
+pub fn validate_metrics(Metrics) -> ValidationReport
+
+pub fn validate_sim(Sim) -> ValidationReport
+
+pub fn validate_trace(Array[TraceEntry]) -> ValidationReport
+
+pub fn validation_issue(String, String, severity? : String) -> ValidationIssue
+
+pub fn version() -> String
+
+pub fn weighted_choice(String, Int) -> WeightedChoice
+
+pub fn workflow_critical_path(WorkflowPlan) -> Int
+
+// Errors
+
+// Types and methods
+pub(all) struct Backoff {
+  initial : Int
+  factor : Int
+  max_delay : Int
+  jitter : Int
+  mut current : Int
+}
+pub fn Backoff::new(initial? : Int, factor? : Int, max_delay? : Int, jitter? : Int) -> Self
+pub fn Backoff::next_delay(Self, Rng) -> Int
+pub fn Backoff::reset(Self) -> Unit
+
+pub(all) struct CircuitBreaker {
+  name : String
+  config : CircuitBreakerConfig
+  mut state : String
+  mut failures : Int
+  mut opened_tick : Int
+  mut trial_successes : Int
+}
+pub fn CircuitBreaker::allow(Self, Sim) -> Bool
+pub fn CircuitBreaker::new(String, config? : CircuitBreakerConfig) -> Self
+pub fn CircuitBreaker::record_failure(Self, Sim) -> Unit
+pub fn CircuitBreaker::record_success(Self, Sim) -> Unit
+pub fn CircuitBreaker::state(Self) -> String
+
+pub(all) struct CircuitBreakerConfig {
+  failure_threshold : Int
+  reset_timeout : Int
+  half_open_successes : Int
+}
+
+pub(all) struct CircuitBreakerResult {
+  state : String
+  allowed : Int
+  rejected : Int
+  successes : Int
+  failures : Int
+  final_tick : Int
+  digest : UInt64
+}
+pub fn CircuitBreakerResult::summary(Self) -> ModelSummary
+
+pub(all) struct CounterSample {
+  name : String
+  value : Int
+}
+
+pub(all) struct DemoDescriptor {
+  name : String
+  command : String
+  purpose : String
+  features : Array[String]
+}
+pub fn DemoDescriptor::has_feature(Self, String) -> Bool
+
+pub(all) struct Duration {
+  value : Int
+} derive(Eq, @debug.Debug)
+pub fn Duration::is_zero(Self) -> Bool
+pub fn Duration::scale(Self, Int) -> Self
+pub fn Duration::to_int(Self) -> Int
+
+pub(all) struct EventId {
+  value : Int
+} derive(Eq, @debug.Debug)
+pub fn EventId::to_int(Self) -> Int
+
+pub(all) struct EventView {
+  id : Int
+  tick : Int
+  priority : Int
+  name : String
+  status : String
+}
+
+pub(all) struct ExperimentCase {
+  name : String
+  summary : ModelSummary
+  notes : String
+}
+
+pub(all) struct ExperimentReport {
+  title : String
+  cases : Array[ExperimentCase]
+}
+pub fn ExperimentReport::add(Self, ExperimentCase) -> Self
+pub fn ExperimentReport::case_count(Self) -> Int
+pub fn ExperimentReport::combined_digest(Self) -> UInt64
+pub fn ExperimentReport::max_final_tick(Self) -> Int
+pub fn ExperimentReport::new(String) -> Self
+pub fn ExperimentReport::render(Self) -> String
+pub fn ExperimentReport::total_events(Self) -> Int
+
+pub(all) struct FeatureCell {
+  demo : String
+  feature : String
+  supported : Bool
+}
+
+pub(all) struct FeatureCoverage {
+  demo_count : Int
+  feature_count : Int
+  supported_cells : Int
+  total_cells : Int
+}
+pub fn FeatureCoverage::line(Self) -> String
+pub fn FeatureCoverage::percent(Self) -> Int
+
+pub(all) struct FeatureMatrix {
+  demos : Array[String]
+  features : Array[String]
+  cells : Array[FeatureCell]
+}
+pub fn FeatureMatrix::coverage(Self) -> FeatureCoverage
+pub fn FeatureMatrix::demo_count_for_feature(Self, String) -> Int
+pub fn FeatureMatrix::feature_count(Self, String) -> Int
+pub fn FeatureMatrix::render(Self) -> String
+pub fn FeatureMatrix::supports(Self, String, String) -> Bool
+
+pub(all) struct ForkComparison {
+  left_name : String
+  right_name : String
+  left_digest : UInt64
+  right_digest : UInt64
+  same_digest : Bool
+  left_events : Int
+  right_events : Int
+}
+pub fn ForkComparison::summary(Self) -> String
+
+pub(all) struct IntRange {
+  min : Int
+  max : Int
+}
+
+pub(all) struct InvariantCheck {
+  name : String
+  passed : Bool
+  detail : String
+}
+
+pub(all) struct InvariantReport {
+  subject : String
+  checks : Array[InvariantCheck]
+}
+pub fn InvariantReport::add(Self, InvariantCheck) -> Self
+pub fn InvariantReport::check_count(Self) -> Int
+pub fn InvariantReport::failed_count(Self) -> Int
+pub fn InvariantReport::has_check(Self, String) -> Bool
+pub fn InvariantReport::is_empty(Self) -> Bool
+pub fn InvariantReport::merge(Self, Self) -> Self
+pub fn InvariantReport::new(String) -> Self
+pub fn InvariantReport::only_failures(Self) -> Self
+pub fn InvariantReport::passed(Self) -> Bool
+pub fn InvariantReport::passed_count(Self) -> Int
+pub fn InvariantReport::render(Self) -> String
+pub fn InvariantReport::summary(Self) -> String
+
+pub(all) struct LoadBalancerConfig {
+  seed : UInt64
+  jobs : Int
+  workers : Int
+  max_arrival_gap : Int
+  min_service : Int
+  max_service : Int
+  strategy : String
+}
+
+pub(all) struct LoadBalancerResult {
+  jobs : Int
+  workers : Int
+  strategy : String
+  final_tick : Int
+  max_queue_depth : Int
+  total_wait : Int
+  events_executed : Int
+  digest : UInt64
+}
+
+pub(all) struct Message {
+  id : Int
+  from : String
+  to : String
+  body : String
+  send_tick : Int
+  deliver_tick : Int
+  dropped : Bool
+}
+
+pub(all) struct MessageBus {
+  mut next_message_id : Int
+  mut messages : Array[Message]
+}
+pub fn MessageBus::deliver_due(Self, Sim) -> Int
+pub fn MessageBus::drop(Self, Sim, Int) -> Bool
+pub fn MessageBus::messages(Self) -> Array[Message]
+pub fn MessageBus::new() -> Self
+pub fn MessageBus::pending(Self, Sim) -> Int
+pub fn MessageBus::send(Self, Sim, String, String, String, delay? : Int) -> Int
+
+pub(all) struct MetricDelta {
+  name : String
+  before : Int
+  after : Int
+  delta : Int
+}
+
+pub(all) struct MetricDiff {
+  counters : Array[MetricDelta]
+  gauges : Array[MetricDelta]
+  sample_delta : Int
+}
+pub fn MetricDiff::summary(Self) -> String
+
+pub(all) struct MetricSnapshot {
+  counters : Array[CounterSample]
+  gauges : Array[CounterSample]
+  samples : Array[CounterSample]
+}
+
+pub(all) struct Metrics {
+  mut counters : Array[CounterSample]
+  mut gauges : Array[CounterSample]
+  mut samples : Array[CounterSample]
+}
+pub fn Metrics::counter(Self, String) -> Int
+pub fn Metrics::diff_from(Self, MetricSnapshot) -> MetricDiff
+pub fn Metrics::distribution(Self, String) -> SampleDistribution
+pub fn Metrics::gauge(Self, String) -> Int
+pub fn Metrics::gauge_snapshot(Self) -> Array[CounterSample]
+pub fn Metrics::inc(Self, String, delta? : Int) -> Unit
+pub fn Metrics::metric_snapshot(Self) -> MetricSnapshot
+pub fn Metrics::new() -> Self
+pub fn Metrics::sample(Self, String, Int) -> Unit
+pub fn Metrics::sample_count(Self, String) -> Int
+pub fn Metrics::sample_snapshot(Self) -> Array[CounterSample]
+pub fn Metrics::sample_values(Self, String) -> Array[Int]
+pub fn Metrics::set_gauge(Self, String, Int) -> Unit
+pub fn Metrics::snapshot(Self) -> Array[CounterSample]
+pub fn Metrics::summary(Self, String) -> SampleSummary
+
+pub(all) struct ModelSummary {
+  name : String
+  digest : UInt64
+  final_tick : Int
+  events : Int
+}
+pub fn ModelSummary::line(Self) -> String
+
+pub(all) struct NetworkConfig {
+  seed : UInt64
+  messages : Int
+  latency_min : Int
+  latency_max : Int
+  drop_percent : Int
+  retry_delay : Int
+}
+
+pub(all) struct NetworkResult {
+  messages : Int
+  delivered : Int
+  dropped : Int
+  retries : Int
+  pending : Int
+  final_tick : Int
+  digest : UInt64
+  trace : Array[TraceEntry]
+}
+
+pub(all) struct QueueConfig {
+  seed : UInt64
+  customers : Int
+  max_arrival_gap : Int
+  service_time : Int
+}
+
+pub(all) struct QueueResult {
+  customers : Int
+  events_executed : Int
+  final_tick : Int
+  min_arrival : Int
+  max_arrival : Int
+  digest : UInt64
+  trace : Array[TraceEntry]
+}
+
+pub(all) struct QueueStats {
+  pending : Int
+  cancelled : Int
+  earliest_tick : Int
+  latest_tick : Int
+}
+
+pub(all) struct ReliabilityConfig {
+  seed : UInt64
+  operations : Int
+  fail_percent : Int
+  retry_limit : Int
+  backoff : Int
+}
+
+pub(all) struct ReliabilityResult {
+  operations : Int
+  successes : Int
+  failures : Int
+  retries : Int
+  exhausted : Int
+  final_tick : Int
+  digest : UInt64
+  trace : Array[TraceEntry]
+}
+pub fn ReliabilityResult::line(Self) -> String
+pub fn ReliabilityResult::success_rate_percent(Self) -> Int
+pub fn ReliabilityResult::summary(Self) -> ModelSummary
+
+pub(all) struct ReplayBaseline {
+  name : String
+  digest : UInt64
+  entries : Array[TraceEntry]
+  counters : Array[CounterSample]
+  gauges : Array[CounterSample]
+}
+
+pub(all) struct ReplayComparison {
+  name : String
+  matched : Bool
+  trace : TraceComparison
+  counter_mismatches : Int
+  gauge_mismatches : Int
+}
+pub fn ReplayComparison::summary(Self) -> String
+
+pub(all) struct RetryConfig {
+  seed : UInt64
+  max_attempts : Int
+  fail_until : Int
+  initial_backoff : Int
+  jitter : Int
+}
+
+pub(all) struct RetryResult {
+  attempts : Int
+  retries : Int
+  success : Bool
+  final_tick : Int
+  digest : UInt64
+  trace : Array[TraceEntry]
+}
+
+pub(all) struct Rng {
+  mut state : UInt64
+}
+pub fn[T] Rng::choose(Self, Array[T]) -> T?
+pub fn Rng::choose_weighted(Self, Array[WeightedChoice]) -> String?
+pub fn Rng::new(UInt64) -> Self
+pub fn Rng::next_bool(Self) -> Bool
+pub fn Rng::next_int(Self, Int) -> Int
+pub fn Rng::next_range(Self, Int, Int) -> Int
+pub fn Rng::next_u64(Self) -> UInt64
+pub fn[T] Rng::shuffle(Self, Array[T]) -> Array[T]
+pub fn Rng::state(Self) -> UInt64
+
+pub(all) struct RunReport {
+  steps : Int
+  final_tick : Int
+  pending : Int
+  reason : RunStopReason
+}
+
+pub(all) enum RunStep {
+  Executed(ScheduledEvent)
+  Idle
+}
+
+pub(all) enum RunStopReason {
+  Idle
+  StepLimit
+  TickLimit
+}
+
+pub(all) struct SampleDistribution {
+  name : String
+  count : Int
+  min : Int
+  max : Int
+  median : Int
+  p90 : Int
+}
+
+pub(all) struct SampleSummary {
+  name : String
+  count : Int
+  min : Int
+  max : Int
+  sum : Int
+}
+pub fn SampleSummary::average(Self) -> Double
+
+pub(all) struct Scenario {
+  name : String
+  seed : UInt64
+  max_steps : Int
+  mut expectations : Array[ScenarioExpectation]
+}
+pub fn Scenario::create_sim(Self) -> Sim
+pub fn Scenario::expect_counter(Self, String, Int) -> Self
+pub fn Scenario::expect_counter_range(Self, String, Int, Int) -> Self
+pub fn Scenario::expect_digest(Self, UInt64) -> Self
+pub fn Scenario::expect_final_tick(Self, Int) -> Self
+pub fn Scenario::expect_final_tick_range(Self, Int, Int) -> Self
+pub fn Scenario::expect_gauge(Self, String, Int) -> Self
+pub fn Scenario::expect_no_validation_issues(Self) -> Self
+pub fn Scenario::expect_pending(Self, Int) -> Self
+pub fn Scenario::expect_sample_count(Self, String, Int) -> Self
+pub fn Scenario::expect_summary_average_range(Self, String, Int, Int) -> Self
+pub fn Scenario::expect_summary_max(Self, String, Int) -> Self
+pub fn Scenario::expect_summary_min(Self, String, Int) -> Self
+pub fn Scenario::expect_trace_contains(Self, String) -> Self
+pub fn Scenario::expect_trace_kind_count(Self, String, Int) -> Self
+pub fn Scenario::new(String, seed? : UInt64, max_steps? : Int) -> Self
+pub fn Scenario::verify(Self, Sim) -> ScenarioReport
+
+pub(all) struct ScenarioCase {
+  scenario : Scenario
+  sim : Sim
+}
+
+pub(all) struct ScenarioExpectation {
+  kind : String
+  name : String
+  expected : String
+}
+
+pub(all) struct ScenarioFailure {
+  kind : String
+  name : String
+  expected : String
+  actual : String
+}
+
+pub(all) struct ScenarioReport {
+  name : String
+  mut passed : Bool
+  steps : Int
+  final_tick : Int
+  digest : UInt64
+  mut failures : Array[ScenarioFailure]
+}
+pub fn ScenarioReport::detailed_text(Self) -> String
+pub fn ScenarioReport::failure_count(Self) -> Int
+pub fn ScenarioReport::failure_text(Self) -> String
+pub fn ScenarioReport::summary(Self) -> String
+
+pub(all) struct ScenarioSuite {
+  name : String
+  mut cases : Array[ScenarioCase]
+}
+pub fn ScenarioSuite::add(Self, Scenario, Sim) -> Self
+pub fn ScenarioSuite::new(String) -> Self
+pub fn ScenarioSuite::run(Self) -> ScenarioSuiteReport
+
+pub(all) struct ScenarioSuiteReport {
+  name : String
+  reports : Array[ScenarioReport]
+}
+pub fn ScenarioSuiteReport::failed_count(Self) -> Int
+pub fn ScenarioSuiteReport::passed(Self) -> Bool
+pub fn ScenarioSuiteReport::passed_count(Self) -> Int
+pub fn ScenarioSuiteReport::render(Self) -> String
+pub fn ScenarioSuiteReport::summary(Self) -> String
+
+pub(all) struct ScheduledEvent {
+  id : Int
+  tick : Int
+  priority : Int
+  name : String
+  mut cancelled : Bool
+  repeat_every : Int
+  remaining_runs : Int
+}
+pub fn ScheduledEvent::cancel(Self) -> Unit
+pub fn ScheduledEvent::is_cancelled(Self) -> Bool
+pub fn ScheduledEvent::is_repeating(Self) -> Bool
+pub fn ScheduledEvent::new(Int, Int, String, priority? : Int) -> Self
+pub fn ScheduledEvent::next_repeat(Self) -> Self
+pub fn ScheduledEvent::repeating(Int, Int, String, Int, Int, priority? : Int) -> Self
+
+pub(all) struct SeedMatrix {
+  name : String
+  runs : Array[SeedRun]
+}
+pub fn SeedMatrix::add(Self, SeedRun) -> Self
+pub fn SeedMatrix::combined_digest(Self) -> UInt64
+pub fn SeedMatrix::count(Self) -> Int
+pub fn SeedMatrix::fastest(Self) -> SeedRun?
+pub fn SeedMatrix::has_seed(Self, UInt64) -> Bool
+pub fn SeedMatrix::is_empty(Self) -> Bool
+pub fn SeedMatrix::lines(Self) -> Array[String]
+pub fn SeedMatrix::max_final_tick(Self) -> Int
+pub fn SeedMatrix::new(String) -> Self
+pub fn SeedMatrix::render(Self) -> String
+pub fn SeedMatrix::slowest(Self) -> SeedRun?
+pub fn SeedMatrix::summary_line(Self) -> String
+pub fn SeedMatrix::tick_span(Self) -> Int
+pub fn SeedMatrix::total_events(Self) -> Int
+pub fn SeedMatrix::unique_digests(Self) -> Int
+
+pub(all) struct SeedMatrixComparison {
+  left_name : String
+  right_name : String
+  same_digest : Bool
+  same_count : Bool
+  left_digest : UInt64
+  right_digest : UInt64
+  left_count : Int
+  right_count : Int
+}
+pub fn SeedMatrixComparison::count_changed(Self) -> Bool
+pub fn SeedMatrixComparison::digest_changed(Self) -> Bool
+pub fn SeedMatrixComparison::fully_changed(Self) -> Bool
+pub fn SeedMatrixComparison::is_stable(Self) -> Bool
+pub fn SeedMatrixComparison::matched(Self) -> Bool
+pub fn SeedMatrixComparison::summary(Self) -> String
+
+pub(all) struct SeedRun {
+  seed : UInt64
+  summary : ModelSummary
+}
+
+pub(all) struct Sim {
+  mut now : Int
+  mut next_id : Int
+  mut events : Array[ScheduledEvent]
+  mut trace_entries : Array[TraceEntry]
+  rng : Rng
+  metrics : Metrics
+}
+pub fn Sim::cancel(Self, Int) -> Bool
+pub fn[T] Sim::choose(Self, String, Array[T]) -> T?
+pub fn Sim::choose_weighted(Self, String, Array[WeightedChoice]) -> String?
+pub fn Sim::digest(Self) -> UInt64
+pub fn Sim::event_views(Self) -> Array[EventView]
+pub fn Sim::inc_counter(Self, String, delta? : Int) -> Unit
+pub fn Sim::install_timer(Self, TimerPlan) -> Int
+pub fn Sim::metrics(Self) -> Metrics
+pub fn Sim::new(seed? : UInt64) -> Self
+pub fn Sim::next_int(Self, Int) -> Int
+pub fn Sim::next_range(Self, Int, Int) -> Int
+pub fn Sim::pending_count(Self) -> Int
+pub fn Sim::queue_stats(Self) -> QueueStats
+pub fn Sim::record_transition(Self, StateMachine, TransitionResult) -> Unit
+pub fn Sim::restore(SimSnapshot) -> Self
+pub fn Sim::run_next(Self) -> ScheduledEvent?
+pub fn Sim::run_report_until_idle(Self, max_steps? : Int) -> RunReport
+pub fn Sim::run_until_idle(Self, max_steps? : Int) -> Int
+pub fn Sim::run_until_tick(Self, Int, max_steps? : Int) -> RunReport
+pub fn Sim::sample(Self, String, Int) -> Unit
+pub fn Sim::schedule_after(Self, Int, String, priority? : Int) -> Int
+pub fn Sim::schedule_after_duration(Self, Duration, String, priority? : Int) -> EventId
+pub fn Sim::schedule_at(Self, Int, String, priority? : Int) -> Int
+pub fn Sim::schedule_at_tick(Self, Tick, String, priority? : Int) -> EventId
+pub fn Sim::schedule_backoff(Self, Backoff, String) -> Int
+pub fn Sim::schedule_repeating(Self, Int, Int, Int, String, priority? : Int) -> Int
+pub fn Sim::schedule_timeout(Self, Int, String) -> Int
+pub fn Sim::set_gauge(Self, String, Int) -> Unit
+pub fn[T] Sim::shuffle(Self, String, Array[T]) -> Array[T]
+pub fn Sim::snapshot(Self, name? : String) -> SimSnapshot
+pub fn Sim::step(Self) -> RunStep
+pub fn Sim::tick(Self) -> Tick
+pub fn Sim::time(Self) -> Int
+pub fn Sim::timeline(Self, bucket_size? : Int) -> TimelineView
+pub fn Sim::timeline_text(Self) -> String
+pub fn Sim::trace(Self) -> Array[TraceEntry]
+pub fn Sim::trace_stats(Self) -> TraceStats
+pub fn Sim::trace_text(Self) -> String
+pub fn Sim::validate(Self) -> ValidationReport
+
+pub(all) struct SimSnapshot {
+  name : String
+  time : Int
+  next_id : Int
+  rng_state : UInt64
+  digest : UInt64
+  events : Array[ScheduledEvent]
+  counters : Array[CounterSample]
+  gauges : Array[CounterSample]
+  samples : Array[CounterSample]
+}
+pub fn SimSnapshot::fork(Self, String) -> Sim
+
+pub(all) struct StateMachine {
+  name : String
+  mut state : String
+  mut transitions : Array[Transition]
+  mut history : Array[TransitionResult]
+}
+pub fn StateMachine::add(Self, Transition) -> Self
+pub fn StateMachine::history(Self) -> Array[TransitionResult]
+pub fn StateMachine::new(String, String) -> Self
+pub fn StateMachine::send(Self, String) -> TransitionResult
+pub fn StateMachine::state(Self) -> String
+
+pub(all) struct SweepPoint {
+  name : String
+  summary : ModelSummary
+  score : Int
+}
+
+pub(all) struct SweepReport {
+  name : String
+  mut points : Array[SweepPoint]
+}
+pub fn SweepReport::add(Self, SweepPoint) -> Self
+pub fn SweepReport::best_by_final_tick(Self) -> SweepPoint?
+pub fn SweepReport::best_by_score(Self) -> SweepPoint?
+pub fn SweepReport::combined_digest(Self) -> UInt64
+pub fn SweepReport::count(Self) -> Int
+pub fn SweepReport::new(String) -> Self
+pub fn SweepReport::render(Self) -> String
+
+pub(all) struct Tick {
+  value : Int
+} derive(Eq, @debug.Debug)
+pub fn Tick::compare(Self, Self) -> Int
+pub fn Tick::diff(Self, Self) -> Duration
+pub fn Tick::plus(Self, Duration) -> Self
+pub fn Tick::to_int(Self) -> Int
+
+pub(all) struct TimelineBucket {
+  start_tick : Int
+  end_tick : Int
+  mut events : Int
+  mut executions : Int
+  mut metrics : Int
+  mut messages : Int
+}
+pub fn TimelineBucket::line(Self) -> String
+
+pub(all) struct TimelineView {
+  bucket_size : Int
+  buckets : Array[TimelineBucket]
+}
+pub fn TimelineView::bucket_count(Self) -> Int
+pub fn TimelineView::peak_bucket(Self) -> TimelineBucket
+pub fn TimelineView::render(Self) -> String
+pub fn TimelineView::total_events(Self) -> Int
+
+pub(all) struct TimerPlan {
+  name : String
+  start_after : Int
+  interval : Int
+  times : Int
+  priority : Int
+}
+
+pub(all) struct TokenBucket {
+  name : String
+  capacity : Int
+  refill : Int
+  interval : Int
+  mut tokens : Int
+  mut last_refill_tick : Int
+}
+pub fn TokenBucket::allow(Self, Sim, cost? : Int) -> Bool
+pub fn TokenBucket::new(String, capacity? : Int, refill? : Int, interval? : Int) -> Self
+pub fn TokenBucket::refill_to(Self, Int) -> Unit
+
+pub(all) struct TokenBucketResult {
+  allowed : Int
+  rejected : Int
+  final_tokens : Int
+  final_tick : Int
+  digest : UInt64
+}
+pub fn TokenBucketResult::summary(Self) -> ModelSummary
+
+pub(all) struct TraceComparison {
+  matched : Bool
+  checked : Int
+  left_digest : UInt64
+  right_digest : UInt64
+  mismatch : TraceMismatch?
+}
+pub fn TraceComparison::summary(Self) -> String
+
+pub(all) struct TraceEntry {
+  tick : Int
+  event_id : Int
+  kind : String
+  detail : String
+}
+pub fn TraceEntry::format(Self) -> String
+pub fn TraceEntry::to_line(Self) -> String
+
+pub(all) struct TraceExpectation {
+  passed : Bool
+  label : String
+  expected : String
+  actual : String
+}
+
+pub(all) struct TraceKindCount {
+  kind : String
+  count : Int
+}
+
+pub(all) struct TraceMismatch {
+  index : Int
+  left : String
+  right : String
+  reason : String
+}
+
+pub(all) struct TraceQuery {
+  kind : String
+  detail : String
+  min_tick : Int
+  max_tick : Int
+}
+pub fn TraceQuery::matches(Self, TraceEntry) -> Bool
+
+pub(all) struct TraceQueryResult {
+  entries : Array[TraceEntry]
+  first_tick : Int
+  last_tick : Int
+  kind_counts : Array[TraceKindCount]
+}
+pub fn TraceQueryResult::kind_count(Self, String) -> Int
+pub fn TraceQueryResult::summary(Self) -> String
+
+pub(all) struct TraceStats {
+  entries : Int
+  schedules : Int
+  executions : Int
+  cancellations : Int
+  rng_draws : Int
+  metrics : Int
+  messages : Int
+}
+pub fn TraceStats::summary(Self) -> String
+
+pub(all) struct TrafficConfig {
+  seed : UInt64
+  cycles : Int
+  cars : Int
+  cycle_ticks : Int
+}
+
+pub(all) struct TrafficResult {
+  cars : Int
+  green_phases : Int
+  red_phases : Int
+  events_executed : Int
+  final_tick : Int
+  digest : UInt64
+}
+
+pub(all) struct Transition {
+  from : String
+  event : String
+  to : String
+  action : String
+}
+
+pub(all) struct TransitionResult {
+  accepted : Bool
+  from : String
+  event : String
+  to : String
+  action : String
+  reason : String
+}
+
+pub(all) struct ValidationIssue {
+  code : String
+  message : String
+  severity : String
+}
+
+pub(all) struct ValidationReport {
+  subject : String
+  issues : Array[ValidationIssue]
+}
+pub fn ValidationReport::passed(Self) -> Bool
+pub fn ValidationReport::summary(Self) -> String
+pub fn ValidationReport::text(Self) -> String
+
+pub(all) struct WeightedChoice {
+  label : String
+  weight : Int
+}
+
+pub(all) struct WorkflowPlan {
+  worker_count : Int
+  mut tasks : Array[WorkflowTask]
+}
+pub fn WorkflowPlan::add(Self, String, Int, deps? : Array[Int]) -> Self
+pub fn WorkflowPlan::new(worker_count? : Int) -> Self
+pub fn WorkflowPlan::task_count(Self) -> Int
+pub fn WorkflowPlan::validate(Self) -> ValidationReport
+
+pub(all) struct WorkflowResult {
+  tasks : Int
+  workers : Int
+  final_tick : Int
+  critical_path : Int
+  runs : Array[WorkflowTaskRun]
+  digest : UInt64
+}
+pub fn WorkflowResult::render(Self) -> String
+pub fn WorkflowResult::summary(Self) -> ModelSummary
+
+pub(all) struct WorkflowTask {
+  id : Int
+  name : String
+  duration : Int
+  deps : Array[Int]
+}
+
+pub(all) struct WorkflowTaskRun {
+  id : Int
+  name : String
+  worker : Int
+  start_tick : Int
+  finish_tick : Int
+}
+
+// Type aliases
+
+// Traits
+

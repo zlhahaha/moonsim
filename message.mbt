@@ -27,7 +27,7 @@ pub fn MessageBus::send(
   from : String,
   to : String,
   body : String,
-  delay? : Int = 1
+  delay? : Int = 1,
 ) -> Int {
   let id = self.next_message_id
   self.next_message_id += 1
@@ -42,7 +42,9 @@ pub fn MessageBus::send(
     dropped: false,
   }
   self.messages.push(msg)
-  ignore(sim.schedule_at(deliver_tick, "message:" + id.to_string() + ":deliver"))
+  ignore(
+    sim.schedule_at(deliver_tick, "message:" + id.to_string() + ":deliver"),
+  )
   sim.record(0, "message.send", from + "->" + to + "#" + id.to_string())
   id
 }
@@ -76,7 +78,11 @@ pub fn MessageBus::deliver_due(self : MessageBus, sim : Sim) -> Int {
   for msg in self.messages {
     if !msg.dropped && msg.deliver_tick <= sim.time() {
       delivered += 1
-      sim.record(0, "message.deliver", msg.from + "->" + msg.to + "#" + msg.id.to_string())
+      sim.record(
+        0,
+        "message.deliver",
+        msg.from + "->" + msg.to + "#" + msg.id.to_string(),
+      )
     }
   }
   sim.inc_counter("messages_delivered", delta=delivered)

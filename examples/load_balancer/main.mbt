@@ -1,13 +1,11 @@
 ///|
 fn main {
-  let least = @moonsim.run_load_balancer_model(@moonsim.load_balancer_config(
-    seed=808UL,
-    strategy="least_queue",
-  ))
-  let random = @moonsim.run_load_balancer_model(@moonsim.load_balancer_config(
-    seed=808UL,
-    strategy="random",
-  ))
+  let least = @moonsim.run_load_balancer_model(
+    @moonsim.load_balancer_config(seed=808UL, strategy="least_queue"),
+  )
+  let random = @moonsim.run_load_balancer_model(
+    @moonsim.load_balancer_config(seed=808UL, strategy="random"),
+  )
 
   println("load balancer simulation")
   println("least_queue_jobs=" + least.jobs.to_string())

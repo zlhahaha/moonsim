@@ -63,7 +63,14 @@ pub fn SeedMatrix::combined_digest(self : SeedMatrix) -> UInt64 {
   let entries : Array[TraceEntry] = []
   for i in 0..<self.runs.length() {
     let run = self.runs[i]
-    entries.push(trace_entry(i, i + 1, "seed.run", run.seed.to_string() + ":" + run.summary.line()))
+    entries.push(
+      trace_entry(
+        i,
+        i + 1,
+        "seed.run",
+        run.seed.to_string() + ":" + run.summary.line(),
+      ),
+    )
   }
   trace_digest(entries)
 }
@@ -142,7 +149,8 @@ fn uint64_array_contains(items : Array[UInt64], value : UInt64) -> Bool {
 ///|
 pub fn SeedMatrix::tick_span(self : SeedMatrix) -> Int {
   match (self.fastest(), self.slowest()) {
-    (Some(fast), Some(slow)) => slow.summary.final_tick - fast.summary.final_tick
+    (Some(fast), Some(slow)) =>
+      slow.summary.final_tick - fast.summary.final_tick
     _ => 0
   }
 }
@@ -150,10 +158,14 @@ pub fn SeedMatrix::tick_span(self : SeedMatrix) -> Int {
 ///|
 pub fn SeedMatrix::summary_line(self : SeedMatrix) -> String {
   self.name +
-  " runs=" + self.count().to_string() +
-  " unique_digests=" + self.unique_digests().to_string() +
-  " max_tick=" + self.max_final_tick().to_string() +
-  " tick_span=" + self.tick_span().to_string()
+  " runs=" +
+  self.count().to_string() +
+  " unique_digests=" +
+  self.unique_digests().to_string() +
+  " max_tick=" +
+  self.max_final_tick().to_string() +
+  " tick_span=" +
+  self.tick_span().to_string()
 }
 
 ///|
@@ -166,7 +178,10 @@ pub fn SeedMatrix::lines(self : SeedMatrix) -> Array[String] {
 }
 
 ///|
-pub fn compare_seed_matrices(left : SeedMatrix, right : SeedMatrix) -> SeedMatrixComparison {
+pub fn compare_seed_matrices(
+  left : SeedMatrix,
+  right : SeedMatrix,
+) -> SeedMatrixComparison {
   {
     left_name: left.name,
     right_name: right.name,
@@ -190,7 +205,9 @@ pub fn SeedMatrixComparison::is_stable(self : SeedMatrixComparison) -> Bool {
 }
 
 ///|
-pub fn SeedMatrixComparison::digest_changed(self : SeedMatrixComparison) -> Bool {
+pub fn SeedMatrixComparison::digest_changed(
+  self : SeedMatrixComparison,
+) -> Bool {
   !self.same_digest
 }
 
@@ -208,12 +225,18 @@ pub fn SeedMatrixComparison::fully_changed(self : SeedMatrixComparison) -> Bool 
 pub fn SeedMatrixComparison::summary(self : SeedMatrixComparison) -> String {
   let status = if self.matched() { "matched" } else { "mismatch" }
   status +
-  " left=" + self.left_name +
-  " right=" + self.right_name +
-  " left_count=" + self.left_count.to_string() +
-  " right_count=" + self.right_count.to_string() +
-  " left_digest=" + self.left_digest.to_string() +
-  " right_digest=" + self.right_digest.to_string()
+  " left=" +
+  self.left_name +
+  " right=" +
+  self.right_name +
+  " left_count=" +
+  self.left_count.to_string() +
+  " right_count=" +
+  self.right_count.to_string() +
+  " left_digest=" +
+  self.left_digest.to_string() +
+  " right_digest=" +
+  self.right_digest.to_string()
 }
 
 ///|
@@ -241,7 +264,11 @@ pub fn SeedMatrix::render(self : SeedMatrix) -> String {
 pub fn retry_seed_matrix(seeds : Array[UInt64]) -> SeedMatrix {
   let matrix = SeedMatrix::new("retry")
   for seed in seeds {
-    ignore(matrix.add(seed_run(seed, retry_summary(run_retry_model(retry_config(seed~))))))
+    ignore(
+      matrix.add(
+        seed_run(seed, retry_summary(run_retry_model(retry_config(seed~)))),
+      ),
+    )
   }
   matrix
 }
@@ -250,16 +277,35 @@ pub fn retry_seed_matrix(seeds : Array[UInt64]) -> SeedMatrix {
 pub fn network_seed_matrix(seeds : Array[UInt64]) -> SeedMatrix {
   let matrix = SeedMatrix::new("network")
   for seed in seeds {
-    ignore(matrix.add(seed_run(seed, network_summary(run_network_model(network_config(seed~))))))
+    ignore(
+      matrix.add(
+        seed_run(
+          seed,
+          network_summary(run_network_model(network_config(seed~))),
+        ),
+      ),
+    )
   }
   matrix
 }
 
 ///|
-pub fn load_balancer_seed_matrix(seeds : Array[UInt64], strategy? : String = "least_queue") -> SeedMatrix {
+pub fn load_balancer_seed_matrix(
+  seeds : Array[UInt64],
+  strategy? : String = "least_queue",
+) -> SeedMatrix {
   let matrix = SeedMatrix::new("load_balancer:" + strategy)
   for seed in seeds {
-    ignore(matrix.add(seed_run(seed, load_balancer_summary(run_load_balancer_model(load_balancer_config(seed~, strategy~))))))
+    ignore(
+      matrix.add(
+        seed_run(
+          seed,
+          load_balancer_summary(
+            run_load_balancer_model(load_balancer_config(seed~, strategy~)),
+          ),
+        ),
+      ),
+    )
   }
   matrix
 }

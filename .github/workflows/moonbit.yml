@@ -1,0 +1,41 @@
+name: MoonBit
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    name: Required verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install MoonBit
+        shell: bash
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | MOONBIT_INSTALL_DEV=1 bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Show MoonBit version
+        run: moon version --all
+
+      - name: Check formatter flags
+        run: moon fmt --help
+
+      - name: Check info flags
+        run: moon info --help
+
+      - name: moon check
+        run: moon check
+
+      - name: moon fmt --deny-warn
+        run: moon fmt --deny-warn
+
+      - name: moon info --deny-warn
+        run: moon info --deny-warn
+
+      - name: moon test
+        run: moon test

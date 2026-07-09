@@ -402,7 +402,9 @@ test "scenario verifies counters and final tick" {
 
 ///|
 test "scenario reports counter failure" {
-  let scenario = @moonsim.Scenario::new("bad").expect_counter("events_executed", 3)
+  let scenario = @moonsim.Scenario::new("bad").expect_counter(
+    "events_executed", 3,
+  )
   let sim = scenario.create_sim()
   ignore(sim.schedule_after(1, "one"))
   let report = scenario.verify(sim)
@@ -543,8 +545,9 @@ test "state machine rejects unknown transition" {
 ///|
 test "state transition can be recorded in sim" {
   let sim = @moonsim.Sim::new()
-  let machine = @moonsim.StateMachine::new("door", "closed")
-    .add(@moonsim.transition("closed", "open", "open"))
+  let machine = @moonsim.StateMachine::new("door", "closed").add(
+    @moonsim.transition("closed", "open", "open"),
+  )
   let result = machine.send("open")
   sim.record_transition(machine, result)
   assert_eq(sim.metrics().counter("state.accepted"), 1)
@@ -553,8 +556,9 @@ test "state transition can be recorded in sim" {
 
 ///|
 test "state machine keeps history" {
-  let machine = @moonsim.StateMachine::new("door", "closed")
-    .add(@moonsim.transition("closed", "open", "open"))
+  let machine = @moonsim.StateMachine::new("door", "closed").add(
+    @moonsim.transition("closed", "open", "open"),
+  )
   ignore(machine.send("open"))
   ignore(machine.send("lock"))
   assert_eq(machine.history().length(), 2)
@@ -659,7 +663,9 @@ test "trace stats summary is readable" {
 
 ///|
 test "scenario verifies trace contains" {
-  let scenario = @moonsim.Scenario::new("trace").expect_trace_contains("schedule")
+  let scenario = @moonsim.Scenario::new("trace").expect_trace_contains(
+    "schedule",
+  )
   let sim = scenario.create_sim()
   ignore(sim.schedule_after(1, "visible"))
   let report = scenario.verify(sim)
@@ -668,7 +674,9 @@ test "scenario verifies trace contains" {
 
 ///|
 test "scenario reports missing trace text" {
-  let scenario = @moonsim.Scenario::new("trace-missing").expect_trace_contains("not-there")
+  let scenario = @moonsim.Scenario::new("trace-missing").expect_trace_contains(
+    "not-there",
+  )
   let sim = scenario.create_sim()
   let report = scenario.verify(sim)
   assert_eq(report.passed, false)
@@ -692,7 +700,9 @@ test "scenario verifies sample count and summary range" {
 
 ///|
 test "scenario detailed text includes failures" {
-  let scenario = @moonsim.Scenario::new("bad-samples").expect_sample_count("latency", 2)
+  let scenario = @moonsim.Scenario::new("bad-samples").expect_sample_count(
+    "latency", 2,
+  )
   let sim = scenario.create_sim()
   sim.sample("latency", 1)
   let report = scenario.verify(sim)

@@ -21,10 +21,7 @@ pub fn Metrics::inc(self : Metrics, name : String, delta? : Int = 1) -> Unit {
   let mut i = 0
   while i < self.counters.length() {
     if self.counters[i].name == name {
-      self.counters[i] = {
-        name,
-        value: self.counters[i].value + delta,
-      }
+      self.counters[i] = { name, value: self.counters[i].value + delta }
       return
     }
     i += 1
@@ -145,7 +142,10 @@ pub fn Metrics::summary(self : Metrics, name : String) -> SampleSummary {
 }
 
 ///|
-pub fn Metrics::distribution(self : Metrics, name : String) -> SampleDistribution {
+pub fn Metrics::distribution(
+  self : Metrics,
+  name : String,
+) -> SampleDistribution {
   let values = self.sample_values(name)
   values.sort()
   if values.length() == 0 {
@@ -216,7 +216,10 @@ pub fn Metrics::metric_snapshot(self : Metrics) -> MetricSnapshot {
 }
 
 ///|
-pub fn diff_metrics(before : MetricSnapshot, after : MetricSnapshot) -> MetricDiff {
+pub fn diff_metrics(
+  before : MetricSnapshot,
+  after : MetricSnapshot,
+) -> MetricDiff {
   {
     counters: diff_counter_samples(before.counters, after.counters),
     gauges: diff_counter_samples(before.gauges, after.gauges),
@@ -225,12 +228,18 @@ pub fn diff_metrics(before : MetricSnapshot, after : MetricSnapshot) -> MetricDi
 }
 
 ///|
-pub fn Metrics::diff_from(self : Metrics, before : MetricSnapshot) -> MetricDiff {
+pub fn Metrics::diff_from(
+  self : Metrics,
+  before : MetricSnapshot,
+) -> MetricDiff {
   diff_metrics(before, self.metric_snapshot())
 }
 
 ///|
-fn diff_counter_samples(before : Array[CounterSample], after : Array[CounterSample]) -> Array[MetricDelta] {
+fn diff_counter_samples(
+  before : Array[CounterSample],
+  after : Array[CounterSample],
+) -> Array[MetricDelta] {
   let deltas : Array[MetricDelta] = []
   for item in after {
     let start = counter_sample_value(before, item.name)
@@ -276,18 +285,29 @@ fn counter_sample_has(items : Array[CounterSample], name : String) -> Bool {
 
 ///|
 pub fn MetricDiff::summary(self : MetricDiff) -> String {
-  "counters=" + self.counters.length().to_string() +
-  " gauges=" + self.gauges.length().to_string() +
-  " sample_delta=" + self.sample_delta.to_string()
+  "counters=" +
+  self.counters.length().to_string() +
+  " gauges=" +
+  self.gauges.length().to_string() +
+  " sample_delta=" +
+  self.sample_delta.to_string()
 }
 
 ///|
-pub fn metrics_counter_delta(left : Metrics, right : Metrics, name : String) -> Int {
+pub fn metrics_counter_delta(
+  left : Metrics,
+  right : Metrics,
+  name : String,
+) -> Int {
   right.counter(name) - left.counter(name)
 }
 
 ///|
-fn set_named_value(items : Array[CounterSample], name : String, value : Int) -> Unit {
+fn set_named_value(
+  items : Array[CounterSample],
+  name : String,
+  value : Int,
+) -> Unit {
   let mut i = 0
   while i < items.length() {
     if items[i].name == name {
