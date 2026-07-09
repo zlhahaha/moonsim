@@ -229,7 +229,7 @@ Shows:
 ### Milestone 5: Documentation And Polish
 
 - Keep README concise.
-- Maintain `DESIGN.md`.
+- Maintain `docs/design.md`.
 - Maintain `docs/api.md` and `docs/examples.md`.
 - Keep examples and tests passing.
 

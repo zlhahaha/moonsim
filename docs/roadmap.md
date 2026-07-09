@@ -29,7 +29,7 @@ Tasks:
 - Create the MoonBit package layout.
 - Add `README.md`.
 - Add `LICENSE`.
-- Add `DESIGN.md`.
+- Add `docs/design.md`.
 - Add smoke tests.
 - Document build/test commands.
 
@@ -122,7 +122,7 @@ Status: in progress
 Tasks:
 
 - Keep README concise and user-focused.
-- Maintain `DESIGN.md`.
+- Maintain `docs/design.md`.
 - Maintain `docs/api.md`.
 - Maintain `docs/examples.md`.
 - Keep examples and tests passing.

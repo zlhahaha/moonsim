@@ -132,7 +132,7 @@ reliability suite.
 
 ## Documentation
 
-- `DESIGN.md`: design goals, non-goals, and module boundaries.
+- `docs/design.md`: design goals, non-goals, and module boundaries.
 - `docs/api.md`: public API and package layout notes.
 - `docs/examples.md`: runnable examples and smoke-test notes.
 - `docs/testing.md`: local verification, CI checks, and release gates.
