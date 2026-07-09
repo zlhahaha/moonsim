@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zlhahaha/moonsim/models"
+
+import {
+  "zlhahaha/moonsim",
+}
+
+// Values
+pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> @moonsim.LoadBalancerConfig
+
+pub fn network_config(seed? : UInt64, messages? : Int, latency_min? : Int, latency_max? : Int, drop_percent? : Int, retry_delay? : Int) -> @moonsim.NetworkConfig
+
+pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> @moonsim.QueueConfig
+
+pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, initial_backoff? : Int, jitter? : Int) -> @moonsim.RetryConfig
+
+pub fn run_default_service_resilience_suite() -> @moonsim.ServiceResilienceResult
+
+pub fn run_load_balancer_model(@moonsim.LoadBalancerConfig) -> @moonsim.LoadBalancerResult
+
+pub fn run_network_model(@moonsim.NetworkConfig) -> @moonsim.NetworkResult
+
+pub fn run_queue_model(@moonsim.QueueConfig) -> @moonsim.QueueResult
+
+pub fn run_retry_model(@moonsim.RetryConfig) -> @moonsim.RetryResult
+
+pub fn run_service_resilience_suite(@moonsim.ServiceResilienceConfig) -> @moonsim.ServiceResilienceResult
+
+pub fn service_resilience_config(seed? : UInt64, requests? : Int, workers? : Int, queue_limit? : Int, timeout_ticks? : Int, retry_limit? : Int, base_latency? : Int, jitter? : Int, fail_percent? : Int, drop_percent? : Int, rate_limit_capacity? : Int, rate_limit_refill? : Int, rate_limit_interval? : Int, min_success_percent? : Int) -> @moonsim.ServiceResilienceConfig
+
+pub fn service_resilience_seed_matrix(Array[UInt64]) -> @moonsim.SeedMatrix
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

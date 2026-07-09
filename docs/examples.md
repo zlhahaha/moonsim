@@ -9,6 +9,24 @@ moon run cmd/main
 Runs a small retry-style simulation and prints metrics, trace entries, and a
 deterministic digest.
 
+## Smoke Test Set
+
+These examples form the minimum end-to-end smoke set used by CI and local
+release checks:
+
+```bash
+moon run examples/service_resilience
+moon run examples/workflow
+moon run examples/seed_matrix
+```
+
+They cover the main user workflow: define a model, run deterministic scenarios,
+check invariants, compare seeds, and print stable digests or reports.
+
+Examples continue to import the root `zlhahaha/moonsim` facade. Advanced users
+can use `core`, `models`, and `reports` when they want narrower package
+boundaries.
+
 ## Queue Simulation
 
 ```bash

@@ -6,6 +6,29 @@ The API is centered on deterministic model tests rather than an Actor runtime:
 `Sim`, scenario suites, metrics, snapshots, and trace/replay are the primary
 surface.
 
+## Package Layout
+
+`moonsim` exposes a stable root facade plus focused subpackages:
+
+- `zlhahaha/moonsim`: recommended starting point for examples and application
+  code. It keeps the common simulation, model, and report APIs available from
+  one import.
+- `zlhahaha/moonsim/core`: virtual time, scheduling, deterministic RNG, traces,
+  replay comparison, invariants, and validation.
+- `zlhahaha/moonsim/models`: queue, retry, network, load balancer, workflow,
+  and service reliability model entry points.
+- `zlhahaha/moonsim/reports`: text reports, trace/metrics summaries, feature
+  matrices, and demo catalogs.
+
+The focused packages are thin entry points over the same stable implementation,
+so existing root-package users do not need to migrate.
+
+```moonbit
+let sim = @core.sim(seed=2026UL)
+let result = @models.run_default_service_resilience_suite()
+println(@reports.render_service_resilience_report(result))
+```
+
 ## Simulation
 
 ```moonbit

@@ -49,9 +49,25 @@ moon run cmd/main
 The CLI demo prints a service reliability model report, invariant results, a
 seeded digest, and a smaller retry-style trace.
 
-## Submission Verification
+## Package Layout
 
-The OSC 2026 MoonBit project submission is verified with these commands:
+The root package remains the stable facade for application code and examples:
+
+- `zlhahaha/moonsim`: common facade for simulation, models, reports, and
+  quick-start examples.
+- `zlhahaha/moonsim/core`: focused entry points for virtual time, scheduling,
+  deterministic RNG, traces, replay, invariants, and validation.
+- `zlhahaha/moonsim/models`: reusable queue, retry, network, load-balancing,
+  workflow, and service reliability models.
+- `zlhahaha/moonsim/reports`: text reports, feature matrices, demo catalogs,
+  and trace/metrics summaries.
+
+Most users can start with the root package and move to the focused packages
+when they want clearer module boundaries.
+
+## Verification
+
+The repository is kept checkable with these commands:
 
 ```bash
 moon fmt --check
@@ -62,12 +78,12 @@ moon test --deny-warn
 moon run cmd/main
 ```
 
-The repository includes `.github/workflows/moonbit.yml` with the same required
+The repository includes `.github/workflows/moonbit.yml` with the same core
 steps on Linux, macOS, and Windows. `moon info` writes the checked-in
 `pkg.generated.mbti` files, and `git diff --exit-code` verifies that the
 generated public interfaces are up to date.
 
-The local stable toolchain observed during this repair was:
+One validated local toolchain was:
 
 ```text
 moon 0.1.20260703 (6fbf8c3 2026-07-03)
@@ -117,8 +133,8 @@ reliability suite.
 ## Documentation
 
 - `DESIGN.md`: design goals, non-goals, and module boundaries.
-- `docs/api.md`: public API notes.
-- `docs/examples.md`: runnable example notes.
+- `docs/api.md`: public API and package layout notes.
+- `docs/examples.md`: runnable examples and smoke-test notes.
 - `docs/roadmap.md`: project roadmap.
 
 ## Current Status
@@ -127,3 +143,4 @@ reliability suite.
 - No runtime dependency beyond MoonBit core.
 - Deterministic scheduler, RNG, trace/replay, metrics, scenario suites,
   snapshots, model helpers, validation, reports, and examples.
+- Structured root, core, models, and reports package entry points.

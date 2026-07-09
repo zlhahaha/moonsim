@@ -1,6 +1,10 @@
 _build/
 .mooncakes/
 .codex/
+AGENTS.md
+docs/competition-report.md
+docs/development-report.md
+moonsim_项目申报书.md
 *.wasm
 *.js
 *.map

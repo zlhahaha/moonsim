@@ -1,0 +1,44 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zlhahaha/moonsim/core"
+
+import {
+  "zlhahaha/moonsim",
+}
+
+// Values
+pub fn check_no_pending(@moonsim.Sim) -> @moonsim.InvariantCheck
+
+pub fn check_sim_invariants(@moonsim.Sim) -> @moonsim.InvariantReport
+
+pub fn compare_replay(@moonsim.ReplayBaseline, @moonsim.Sim) -> @moonsim.ReplayComparison
+
+pub fn duration(Int) -> @moonsim.Duration
+
+pub fn event_id(Int) -> @moonsim.EventId
+
+pub fn invariant_check(String, Bool, detail? : String) -> @moonsim.InvariantCheck
+
+pub fn replay_baseline(String, @moonsim.Sim) -> @moonsim.ReplayBaseline
+
+pub fn rng(UInt64) -> @moonsim.Rng
+
+pub fn sim(seed? : UInt64) -> @moonsim.Sim
+
+pub fn tick(Int) -> @moonsim.Tick
+
+pub fn trace_digest(Array[@moonsim.TraceEntry]) -> UInt64
+
+pub fn validate_sim(@moonsim.Sim) -> @moonsim.ValidationReport
+
+pub fn validate_trace(Array[@moonsim.TraceEntry]) -> @moonsim.ValidationReport
+
+pub fn version() -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

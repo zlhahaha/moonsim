@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zlhahaha/moonsim/reports"
+
+import {
+  "zlhahaha/moonsim",
+}
+
+// Values
+pub fn build_feature_matrix() -> @moonsim.FeatureMatrix
+
+pub fn demo_catalog() -> Array[@moonsim.DemoDescriptor]
+
+pub fn render_demo_catalog() -> String
+
+pub fn render_feature_coverage() -> String
+
+pub fn render_feature_matrix() -> String
+
+pub fn render_metrics_report(@moonsim.Metrics) -> String
+
+pub fn render_service_resilience_report(@moonsim.ServiceResilienceResult) -> String
+
+pub fn render_sim_report(@moonsim.Sim, title? : String) -> String
+
+pub fn render_trace_report(Array[@moonsim.TraceEntry], limit? : Int) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+
