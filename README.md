@@ -40,14 +40,37 @@ scenarios, metrics, snapshots, trace/replay, and reusable system models.
 
 ## Quick Start
 
+Install in another MoonBit project:
+
+```bash
+moon add zlhahaha/moonsim
+```
+
+Run this repository:
+
 ```bash
 moon check
 moon test
 moon run cmd/main
 ```
 
-The CLI demo prints the demo catalog, feature matrix, service reliability model
-report, invariant results, seeded digests, and a smaller retry-style trace.
+The CLI demo starts from a retry/timeout reliability problem, runs a deterministic
+service model, replays the same seed, checks invariants, and prints the digest
+you can use to compare future runs.
+
+Minimal usage after `moon add zlhahaha/moonsim`:
+
+```moonbit
+let result = @moonsim.run_service_resilience_suite(
+  config=@moonsim.service_resilience_config(seed=2026UL, requests=32),
+)
+
+println(@moonsim.render_service_resilience_report(result))
+assert_true(result.invariants.passed())
+```
+
+For a step-by-step workflow that starts from a retry/timeout bug and ends with a
+replayable fixed run, read `docs/tutorial.md`.
 
 ## Package Layout
 
@@ -135,8 +158,21 @@ reliability suite.
 - `docs/design.md`: design goals, non-goals, and module boundaries.
 - `docs/api.md`: public API and package layout notes.
 - `docs/examples.md`: runnable examples and smoke-test notes.
+- `docs/tutorial.md`: retry/timeout debugging with deterministic replay and
+  invariants.
 - `docs/testing.md`: local verification, CI checks, and release gates.
 - `docs/roadmap.md`: project roadmap.
+
+## Publishing
+
+Before publishing a release to mooncakes.io, run:
+
+```bash
+moon publish --dry-run
+moon publish
+```
+
+The dry run should be clean before the final publish command is used.
 
 ## Current Status
 
