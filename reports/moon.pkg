@@ -1,3 +1,4 @@
 import {
-  "zlhahaha/moonsim",
+  "zlhahaha/moonsim/core",
+  "zlhahaha/moonsim/models",
 }

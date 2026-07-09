@@ -336,7 +336,7 @@ pub fn Sim::sample(self : Sim, name : String, value : Int) -> Unit {
 }
 
 ///|
-fn Sim::record(
+pub fn Sim::record(
   self : Sim,
   event_id : Int,
   kind : String,

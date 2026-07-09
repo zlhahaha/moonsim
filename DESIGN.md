@@ -56,7 +56,17 @@ across MoonBit targets.
 
 ## Public API
 
-The core API is intentionally small:
+The public API is layered:
+
+- the root package `zlhahaha/moonsim` is the stable facade for common user code
+- `zlhahaha/moonsim/core` contains virtual time, scheduling, RNG, metrics,
+  traces, replay, snapshots, scenarios, invariants, and validation
+- `zlhahaha/moonsim/models` contains reusable queue, retry, network,
+  load-balancer, workflow, and service reliability model helpers
+- `zlhahaha/moonsim/reports` contains text reports, feature matrices, catalogs,
+  sweeps, and seed-matrix summaries
+
+The core concepts remain intentionally small:
 
 - `Sim` owns virtual time, pending events, RNG, trace, and metrics.
 - `ScheduledEvent` is the deterministic event record.
@@ -70,7 +80,7 @@ Detailed API notes live in `docs/api.md`.
 
 The repository includes:
 
-- a retry-style CLI demo in `cmd/main`
+- a project showcase CLI in `cmd/main`
 - a queue simulation in `examples/queue`
 - a retry/backoff simulation in `examples/retry`
 - a traffic light simulation in `examples/traffic`
@@ -85,3 +95,10 @@ The repository includes:
 - a seed matrix simulation in `examples/seed_matrix`
 
 Detailed example notes live in `docs/examples.md`.
+
+## Quality Gates
+
+The project is expected to pass formatting, package checking, generated
+interface verification, unit tests, the CLI showcase, and representative
+example smoke tests. The exact commands are documented in `docs/testing.md` and
+mirrored by the GitHub Actions workflow.

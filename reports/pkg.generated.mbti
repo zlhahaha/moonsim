@@ -2,33 +2,230 @@
 package "zlhahaha/moonsim/reports"
 
 import {
-  "zlhahaha/moonsim",
+  "zlhahaha/moonsim/core",
+  "zlhahaha/moonsim/models",
 }
 
 // Values
-pub fn build_feature_matrix() -> @moonsim.FeatureMatrix
+pub fn build_feature_matrix() -> FeatureMatrix
 
-pub fn demo_catalog() -> Array[@moonsim.DemoDescriptor]
+pub fn compare_experiments(ExperimentReport, ExperimentReport) -> @core.TraceComparison
+
+pub fn compare_traces(Array[@core.TraceEntry], Array[@core.TraceEntry]) -> @core.TraceComparison
+
+pub fn default_features() -> Array[String]
+
+pub fn demo_catalog() -> Array[DemoDescriptor]
+
+pub fn demo_descriptor(String, String, String, Array[String]) -> DemoDescriptor
+
+pub fn demo_experiment() -> ExperimentReport
+
+pub fn demo_names() -> Array[String]
+
+pub fn experiment_case(String, @models.ModelSummary, notes? : String) -> ExperimentCase
+
+pub fn find_demo(String) -> DemoDescriptor?
+
+pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> @models.LoadBalancerConfig
+
+pub fn load_balancer_summary(@models.LoadBalancerResult) -> @models.ModelSummary
+
+pub fn network_config(seed? : UInt64, messages? : Int, latency_min? : Int, latency_max? : Int, drop_percent? : Int, retry_delay? : Int) -> @models.NetworkConfig
+
+pub fn network_summary(@models.NetworkResult) -> @models.ModelSummary
+
+pub fn package_name() -> String
+
+pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> @models.QueueConfig
+
+pub fn queue_summary(@models.QueueResult) -> @models.ModelSummary
+
+pub fn reliability_config(seed? : UInt64, operations? : Int, fail_percent? : Int, retry_limit? : Int, backoff? : Int) -> @models.ReliabilityConfig
 
 pub fn render_demo_catalog() -> String
+
+pub fn render_experiment_report(ExperimentReport) -> String
 
 pub fn render_feature_coverage() -> String
 
 pub fn render_feature_matrix() -> String
 
-pub fn render_metrics_report(@moonsim.Metrics) -> String
+pub fn render_metric_diff(@core.MetricDiff) -> String
 
-pub fn render_service_resilience_report(@moonsim.ServiceResilienceResult) -> String
+pub fn render_metrics_report(@core.Metrics) -> String
 
-pub fn render_sim_report(@moonsim.Sim, title? : String) -> String
+pub fn render_model_summaries(Array[@models.ModelSummary]) -> String
 
-pub fn render_trace_report(Array[@moonsim.TraceEntry], limit? : Int) -> String
+pub fn render_replay_comparison(@core.ReplayComparison) -> String
+
+pub fn render_sample_distribution(@core.Metrics, String) -> String
+
+pub fn render_scenario_report(@core.ScenarioReport) -> String
+
+pub fn render_scenario_suite_report(@core.ScenarioSuiteReport) -> String
+
+pub fn render_sim_report(@core.Sim, title? : String) -> String
+
+pub fn render_trace_report(Array[@core.TraceEntry], limit? : Int) -> String
+
+pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, initial_backoff? : Int, jitter? : Int) -> @models.RetryConfig
+
+pub fn retry_summary(@models.RetryResult) -> @models.ModelSummary
+
+pub fn run_circuit_breaker_model(seed? : UInt64, calls? : Int) -> @models.CircuitBreakerResult
+
+pub fn run_load_balancer_model(@models.LoadBalancerConfig) -> @models.LoadBalancerResult
+
+pub fn run_network_model(@models.NetworkConfig) -> @models.NetworkResult
+
+pub fn run_queue_model(@models.QueueConfig) -> @models.QueueResult
+
+pub fn run_reliability_model(@models.ReliabilityConfig) -> @models.ReliabilityResult
+
+pub fn run_retry_model(@models.RetryConfig) -> @models.RetryResult
+
+pub fn run_token_bucket_model(seed? : UInt64, requests? : Int) -> @models.TokenBucketResult
+
+pub fn run_traffic_model(@models.TrafficConfig) -> @models.TrafficResult
+
+pub fn sweep_load_balancer_strategies(seed? : UInt64, jobs? : Int) -> SweepReport
+
+pub fn sweep_point(String, @models.ModelSummary, score? : Int) -> SweepPoint
+
+pub fn sweep_reliability_failure_rates(seed? : UInt64) -> SweepReport
+
+pub fn trace_digest(Array[@core.TraceEntry]) -> UInt64
+
+pub fn trace_entry(Int, Int, String, String) -> @core.TraceEntry
+
+pub fn trace_stats(Array[@core.TraceEntry]) -> @core.TraceStats
+
+pub fn traffic_config(seed? : UInt64, cycles? : Int, cars? : Int, cycle_ticks? : Int) -> @models.TrafficConfig
+
+pub fn traffic_summary(@models.TrafficResult) -> @models.ModelSummary
 
 // Errors
 
 // Types and methods
+pub(all) struct DemoDescriptor {
+  name : String
+  command : String
+  purpose : String
+  features : Array[String]
+}
+pub fn DemoDescriptor::has_feature(Self, String) -> Bool
+
+pub(all) struct ExperimentCase {
+  name : String
+  summary : @models.ModelSummary
+  notes : String
+}
+
+pub(all) struct ExperimentReport {
+  title : String
+  cases : Array[ExperimentCase]
+}
+pub fn ExperimentReport::add(Self, ExperimentCase) -> Self
+pub fn ExperimentReport::case_count(Self) -> Int
+pub fn ExperimentReport::combined_digest(Self) -> UInt64
+pub fn ExperimentReport::max_final_tick(Self) -> Int
+pub fn ExperimentReport::new(String) -> Self
+pub fn ExperimentReport::render(Self) -> String
+pub fn ExperimentReport::total_events(Self) -> Int
+
+pub(all) struct FeatureCell {
+  demo : String
+  feature : String
+  supported : Bool
+}
+
+pub(all) struct FeatureCoverage {
+  demo_count : Int
+  feature_count : Int
+  supported_cells : Int
+  total_cells : Int
+}
+pub fn FeatureCoverage::line(Self) -> String
+pub fn FeatureCoverage::percent(Self) -> Int
+
+pub(all) struct FeatureMatrix {
+  demos : Array[String]
+  features : Array[String]
+  cells : Array[FeatureCell]
+}
+pub fn FeatureMatrix::coverage(Self) -> FeatureCoverage
+pub fn FeatureMatrix::demo_count_for_feature(Self, String) -> Int
+pub fn FeatureMatrix::feature_count(Self, String) -> Int
+pub fn FeatureMatrix::render(Self) -> String
+pub fn FeatureMatrix::supports(Self, String, String) -> Bool
+
+pub(all) struct SweepPoint {
+  name : String
+  summary : @models.ModelSummary
+  score : Int
+}
+
+pub(all) struct SweepReport {
+  name : String
+  mut points : Array[SweepPoint]
+}
+pub fn SweepReport::add(Self, SweepPoint) -> Self
+pub fn SweepReport::best_by_final_tick(Self) -> SweepPoint?
+pub fn SweepReport::best_by_score(Self) -> SweepPoint?
+pub fn SweepReport::combined_digest(Self) -> UInt64
+pub fn SweepReport::count(Self) -> Int
+pub fn SweepReport::new(String) -> Self
+pub fn SweepReport::render(Self) -> String
 
 // Type aliases
+pub using @models {type CircuitBreakerResult}
+
+pub using @models {type LoadBalancerConfig}
+
+pub using @models {type LoadBalancerResult}
+
+pub using @core {type MetricDiff}
+
+pub using @core {type Metrics}
+
+pub using @models {type ModelSummary}
+
+pub using @models {type NetworkConfig}
+
+pub using @models {type NetworkResult}
+
+pub using @models {type QueueConfig}
+
+pub using @models {type QueueResult}
+
+pub using @models {type ReliabilityConfig}
+
+pub using @models {type ReliabilityResult}
+
+pub using @core {type ReplayComparison}
+
+pub using @models {type RetryConfig}
+
+pub using @models {type RetryResult}
+
+pub using @core {type ScenarioReport}
+
+pub using @core {type ScenarioSuiteReport}
+
+pub using @models {type ServiceResilienceResult}
+
+pub using @core {type Sim}
+
+pub using @models {type TokenBucketResult}
+
+pub using @core {type TraceComparison}
+
+pub using @core {type TraceEntry}
+
+pub using @models {type TrafficConfig}
+
+pub using @models {type TrafficResult}
 
 // Traits
 

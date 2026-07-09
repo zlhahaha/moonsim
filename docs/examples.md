@@ -6,8 +6,10 @@
 moon run cmd/main
 ```
 
-Runs a small retry-style simulation and prints metrics, trace entries, and a
-deterministic digest.
+Runs the main project showcase. It prints the demo catalog, feature matrix,
+service reliability model report, invariant results, seeded digests, and a
+smaller retry-style trace. This is the fastest way to see the library working
+as an end-to-end deterministic model-testing toolkit.
 
 ## Smoke Test Set
 
@@ -26,6 +28,18 @@ check invariants, compare seeds, and print stable digests or reports.
 Examples continue to import the root `zlhahaha/moonsim` facade. Advanced users
 can use `core`, `models`, and `reports` when they want narrower package
 boundaries.
+
+## Package Coverage
+
+The smoke set intentionally exercises all public layers:
+
+- `cmd/main` imports the root facade and renders the catalog, feature matrix,
+  service reliability suite, and basic trace demo.
+- `examples/service_resilience` exercises queue pressure, retries, timeouts,
+  rate limiting, circuit breaking, invariants, reports, and seed matrices.
+- `examples/workflow` exercises dependency-aware scheduling and digest
+  stability.
+- `examples/seed_matrix` exercises deterministic multi-seed regression reports.
 
 ## Queue Simulation
 

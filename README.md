@@ -46,8 +46,8 @@ moon test
 moon run cmd/main
 ```
 
-The CLI demo prints a service reliability model report, invariant results, a
-seeded digest, and a smaller retry-style trace.
+The CLI demo prints the demo catalog, feature matrix, service reliability model
+report, invariant results, seeded digests, and a smaller retry-style trace.
 
 ## Package Layout
 
@@ -135,11 +135,12 @@ reliability suite.
 - `DESIGN.md`: design goals, non-goals, and module boundaries.
 - `docs/api.md`: public API and package layout notes.
 - `docs/examples.md`: runnable examples and smoke-test notes.
+- `docs/testing.md`: local verification, CI checks, and release gates.
 - `docs/roadmap.md`: project roadmap.
 
 ## Current Status
 
-- 190+ tests.
+- 190+ tests plus CLI and example smoke checks.
 - No runtime dependency beyond MoonBit core.
 - Deterministic scheduler, RNG, trace/replay, metrics, scenario suites,
   snapshots, model helpers, validation, reports, and examples.

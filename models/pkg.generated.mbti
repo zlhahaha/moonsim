@@ -2,39 +2,402 @@
 package "zlhahaha/moonsim/models"
 
 import {
-  "zlhahaha/moonsim",
+  "zlhahaha/moonsim/core",
 }
 
 // Values
-pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> @moonsim.LoadBalancerConfig
+pub fn check_sim_invariants(@core.Sim) -> @core.InvariantReport
 
-pub fn network_config(seed? : UInt64, messages? : Int, latency_min? : Int, latency_max? : Int, drop_percent? : Int, retry_delay? : Int) -> @moonsim.NetworkConfig
+pub fn circuit_breaker_config(failure_threshold? : Int, reset_timeout? : Int, half_open_successes? : Int) -> CircuitBreakerConfig
 
-pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> @moonsim.QueueConfig
+pub fn compare_seed_matrices(SeedMatrix, SeedMatrix) -> SeedMatrixComparison
 
-pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, initial_backoff? : Int, jitter? : Int) -> @moonsim.RetryConfig
+pub fn invariant_check(String, Bool, detail? : String) -> @core.InvariantCheck
 
-pub fn run_default_service_resilience_suite() -> @moonsim.ServiceResilienceResult
+pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> LoadBalancerConfig
 
-pub fn run_load_balancer_model(@moonsim.LoadBalancerConfig) -> @moonsim.LoadBalancerResult
+pub fn load_balancer_seed_matrix(Array[UInt64], strategy? : String) -> SeedMatrix
 
-pub fn run_network_model(@moonsim.NetworkConfig) -> @moonsim.NetworkResult
+pub fn load_balancer_summary(LoadBalancerResult) -> ModelSummary
 
-pub fn run_queue_model(@moonsim.QueueConfig) -> @moonsim.QueueResult
+pub fn network_config(seed? : UInt64, messages? : Int, latency_min? : Int, latency_max? : Int, drop_percent? : Int, retry_delay? : Int) -> NetworkConfig
 
-pub fn run_retry_model(@moonsim.RetryConfig) -> @moonsim.RetryResult
+pub fn network_seed_matrix(Array[UInt64]) -> SeedMatrix
 
-pub fn run_service_resilience_suite(@moonsim.ServiceResilienceConfig) -> @moonsim.ServiceResilienceResult
+pub fn network_summary(NetworkResult) -> ModelSummary
 
-pub fn service_resilience_config(seed? : UInt64, requests? : Int, workers? : Int, queue_limit? : Int, timeout_ticks? : Int, retry_limit? : Int, base_latency? : Int, jitter? : Int, fail_percent? : Int, drop_percent? : Int, rate_limit_capacity? : Int, rate_limit_refill? : Int, rate_limit_interval? : Int, min_success_percent? : Int) -> @moonsim.ServiceResilienceConfig
+pub fn package_name() -> String
 
-pub fn service_resilience_seed_matrix(Array[UInt64]) -> @moonsim.SeedMatrix
+pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> QueueConfig
+
+pub fn queue_summary(QueueResult) -> ModelSummary
+
+pub fn reliability_config(seed? : UInt64, operations? : Int, fail_percent? : Int, retry_limit? : Int, backoff? : Int) -> ReliabilityConfig
+
+pub fn render_service_resilience_report(ServiceResilienceResult) -> String
+
+pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, initial_backoff? : Int, jitter? : Int) -> RetryConfig
+
+pub fn retry_seed_matrix(Array[UInt64]) -> SeedMatrix
+
+pub fn retry_summary(RetryResult) -> ModelSummary
+
+pub fn run_circuit_breaker_model(seed? : UInt64, calls? : Int) -> CircuitBreakerResult
+
+pub fn run_load_balancer_model(LoadBalancerConfig) -> LoadBalancerResult
+
+pub fn run_network_model(NetworkConfig) -> NetworkResult
+
+pub fn run_queue_model(QueueConfig) -> QueueResult
+
+pub fn run_reliability_model(ReliabilityConfig) -> ReliabilityResult
+
+pub fn run_retry_model(RetryConfig) -> RetryResult
+
+pub fn run_service_resilience_suite(config? : ServiceResilienceConfig) -> ServiceResilienceResult
+
+pub fn run_token_bucket_model(seed? : UInt64, requests? : Int) -> TokenBucketResult
+
+pub fn run_traffic_model(TrafficConfig) -> TrafficResult
+
+pub fn run_workflow_model(WorkflowPlan, seed? : UInt64) -> WorkflowResult
+
+pub fn seed_run(UInt64, ModelSummary) -> SeedRun
+
+pub fn service_resilience_config(seed? : UInt64, requests? : Int, workers? : Int, queue_limit? : Int, timeout_ticks? : Int, retry_limit? : Int, base_latency? : Int, jitter? : Int, fail_percent? : Int, drop_percent? : Int, rate_limit_capacity? : Int, rate_limit_refill? : Int, rate_limit_interval? : Int, min_success_percent? : Int) -> ServiceResilienceConfig
+
+pub fn service_resilience_seed_matrix(Array[UInt64]) -> SeedMatrix
+
+pub fn timer_plan(String, start_after? : Int, interval? : Int, times? : Int, priority? : Int) -> @core.TimerPlan
+
+pub fn trace_digest(Array[@core.TraceEntry]) -> UInt64
+
+pub fn trace_entry(Int, Int, String, String) -> @core.TraceEntry
+
+pub fn traffic_config(seed? : UInt64, cycles? : Int, cars? : Int, cycle_ticks? : Int) -> TrafficConfig
+
+pub fn traffic_summary(TrafficResult) -> ModelSummary
+
+pub fn validation_issue(String, String, severity? : String) -> @core.ValidationIssue
+
+pub fn version() -> String
+
+pub fn workflow_critical_path(WorkflowPlan) -> Int
 
 // Errors
 
 // Types and methods
+pub(all) struct CircuitBreaker {
+  name : String
+  config : CircuitBreakerConfig
+  mut state : String
+  mut failures : Int
+  mut opened_tick : Int
+  mut trial_successes : Int
+}
+pub fn CircuitBreaker::allow(Self, @core.Sim) -> Bool
+pub fn CircuitBreaker::new(String, config? : CircuitBreakerConfig) -> Self
+pub fn CircuitBreaker::record_failure(Self, @core.Sim) -> Unit
+pub fn CircuitBreaker::record_success(Self, @core.Sim) -> Unit
+pub fn CircuitBreaker::state(Self) -> String
+
+pub(all) struct CircuitBreakerConfig {
+  failure_threshold : Int
+  reset_timeout : Int
+  half_open_successes : Int
+}
+
+pub(all) struct CircuitBreakerResult {
+  state : String
+  allowed : Int
+  rejected : Int
+  successes : Int
+  failures : Int
+  final_tick : Int
+  digest : UInt64
+}
+pub fn CircuitBreakerResult::summary(Self) -> ModelSummary
+
+pub(all) struct LoadBalancerConfig {
+  seed : UInt64
+  jobs : Int
+  workers : Int
+  max_arrival_gap : Int
+  min_service : Int
+  max_service : Int
+  strategy : String
+}
+
+pub(all) struct LoadBalancerResult {
+  jobs : Int
+  workers : Int
+  strategy : String
+  final_tick : Int
+  max_queue_depth : Int
+  total_wait : Int
+  events_executed : Int
+  digest : UInt64
+}
+
+pub(all) struct ModelSummary {
+  name : String
+  digest : UInt64
+  final_tick : Int
+  events : Int
+}
+pub fn ModelSummary::line(Self) -> String
+
+pub(all) struct NetworkConfig {
+  seed : UInt64
+  messages : Int
+  latency_min : Int
+  latency_max : Int
+  drop_percent : Int
+  retry_delay : Int
+}
+
+pub(all) struct NetworkResult {
+  messages : Int
+  delivered : Int
+  dropped : Int
+  retries : Int
+  pending : Int
+  final_tick : Int
+  digest : UInt64
+  trace : Array[@core.TraceEntry]
+}
+
+pub(all) struct QueueConfig {
+  seed : UInt64
+  customers : Int
+  max_arrival_gap : Int
+  service_time : Int
+}
+
+pub(all) struct QueueResult {
+  customers : Int
+  events_executed : Int
+  final_tick : Int
+  min_arrival : Int
+  max_arrival : Int
+  digest : UInt64
+  trace : Array[@core.TraceEntry]
+}
+
+pub(all) struct ReliabilityConfig {
+  seed : UInt64
+  operations : Int
+  fail_percent : Int
+  retry_limit : Int
+  backoff : Int
+}
+
+pub(all) struct ReliabilityResult {
+  operations : Int
+  successes : Int
+  failures : Int
+  retries : Int
+  exhausted : Int
+  final_tick : Int
+  digest : UInt64
+  trace : Array[@core.TraceEntry]
+}
+pub fn ReliabilityResult::line(Self) -> String
+pub fn ReliabilityResult::success_rate_percent(Self) -> Int
+pub fn ReliabilityResult::summary(Self) -> ModelSummary
+
+pub(all) struct RetryConfig {
+  seed : UInt64
+  max_attempts : Int
+  fail_until : Int
+  initial_backoff : Int
+  jitter : Int
+}
+
+pub(all) struct RetryResult {
+  attempts : Int
+  retries : Int
+  success : Bool
+  final_tick : Int
+  digest : UInt64
+  trace : Array[@core.TraceEntry]
+}
+
+pub(all) struct SeedMatrix {
+  name : String
+  runs : Array[SeedRun]
+}
+pub fn SeedMatrix::add(Self, SeedRun) -> Self
+pub fn SeedMatrix::combined_digest(Self) -> UInt64
+pub fn SeedMatrix::count(Self) -> Int
+pub fn SeedMatrix::fastest(Self) -> SeedRun?
+pub fn SeedMatrix::has_seed(Self, UInt64) -> Bool
+pub fn SeedMatrix::is_empty(Self) -> Bool
+pub fn SeedMatrix::lines(Self) -> Array[String]
+pub fn SeedMatrix::max_final_tick(Self) -> Int
+pub fn SeedMatrix::new(String) -> Self
+pub fn SeedMatrix::render(Self) -> String
+pub fn SeedMatrix::slowest(Self) -> SeedRun?
+pub fn SeedMatrix::summary_line(Self) -> String
+pub fn SeedMatrix::tick_span(Self) -> Int
+pub fn SeedMatrix::total_events(Self) -> Int
+pub fn SeedMatrix::unique_digests(Self) -> Int
+
+pub(all) struct SeedMatrixComparison {
+  left_name : String
+  right_name : String
+  same_digest : Bool
+  same_count : Bool
+  left_digest : UInt64
+  right_digest : UInt64
+  left_count : Int
+  right_count : Int
+}
+pub fn SeedMatrixComparison::count_changed(Self) -> Bool
+pub fn SeedMatrixComparison::digest_changed(Self) -> Bool
+pub fn SeedMatrixComparison::fully_changed(Self) -> Bool
+pub fn SeedMatrixComparison::is_stable(Self) -> Bool
+pub fn SeedMatrixComparison::matched(Self) -> Bool
+pub fn SeedMatrixComparison::summary(Self) -> String
+
+pub(all) struct SeedRun {
+  seed : UInt64
+  summary : ModelSummary
+}
+
+pub(all) struct ServiceResilienceConfig {
+  seed : UInt64
+  requests : Int
+  workers : Int
+  queue_limit : Int
+  timeout_ticks : Int
+  retry_limit : Int
+  base_latency : Int
+  jitter : Int
+  fail_percent : Int
+  drop_percent : Int
+  rate_limit_capacity : Int
+  rate_limit_refill : Int
+  rate_limit_interval : Int
+  min_success_percent : Int
+}
+
+pub(all) struct ServiceResilienceResult {
+  config : ServiceResilienceConfig
+  accepted : Int
+  rejected : Int
+  completed : Int
+  failed : Int
+  timed_out : Int
+  retried : Int
+  rate_limited : Int
+  circuit_rejected : Int
+  max_queue_depth : Int
+  final_tick : Int
+  slo_passed : Bool
+  latency_count : Int
+  latency_min : Int
+  latency_max : Int
+  latency_sum : Int
+  digest : UInt64
+  invariants : @core.InvariantReport
+  trace : Array[@core.TraceEntry]
+}
+pub fn ServiceResilienceResult::average_latency(Self) -> Int
+pub fn ServiceResilienceResult::line(Self) -> String
+pub fn ServiceResilienceResult::success_percent(Self) -> Int
+pub fn ServiceResilienceResult::summary(Self) -> ModelSummary
+
+pub(all) struct TokenBucket {
+  name : String
+  capacity : Int
+  refill : Int
+  interval : Int
+  mut tokens : Int
+  mut last_refill_tick : Int
+}
+pub fn TokenBucket::allow(Self, @core.Sim, cost? : Int) -> Bool
+pub fn TokenBucket::new(String, capacity? : Int, refill? : Int, interval? : Int) -> Self
+pub fn TokenBucket::refill_to(Self, Int) -> Unit
+
+pub(all) struct TokenBucketResult {
+  allowed : Int
+  rejected : Int
+  final_tokens : Int
+  final_tick : Int
+  digest : UInt64
+}
+pub fn TokenBucketResult::summary(Self) -> ModelSummary
+
+pub(all) struct TrafficConfig {
+  seed : UInt64
+  cycles : Int
+  cars : Int
+  cycle_ticks : Int
+}
+
+pub(all) struct TrafficResult {
+  cars : Int
+  green_phases : Int
+  red_phases : Int
+  events_executed : Int
+  final_tick : Int
+  digest : UInt64
+}
+
+pub(all) struct WorkflowPlan {
+  worker_count : Int
+  mut tasks : Array[WorkflowTask]
+}
+pub fn WorkflowPlan::add(Self, String, Int, deps? : Array[Int]) -> Self
+pub fn WorkflowPlan::new(worker_count? : Int) -> Self
+pub fn WorkflowPlan::task_count(Self) -> Int
+pub fn WorkflowPlan::validate(Self) -> @core.ValidationReport
+
+pub(all) struct WorkflowResult {
+  tasks : Int
+  workers : Int
+  final_tick : Int
+  critical_path : Int
+  runs : Array[WorkflowTaskRun]
+  digest : UInt64
+}
+pub fn WorkflowResult::render(Self) -> String
+pub fn WorkflowResult::summary(Self) -> ModelSummary
+
+pub(all) struct WorkflowTask {
+  id : Int
+  name : String
+  duration : Int
+  deps : Array[Int]
+}
+
+pub(all) struct WorkflowTaskRun {
+  id : Int
+  name : String
+  worker : Int
+  start_tick : Int
+  finish_tick : Int
+}
 
 // Type aliases
+pub using @core {type Backoff}
+
+pub using @core {type InvariantCheck}
+
+pub using @core {type InvariantReport}
+
+pub using @core {type MessageBus}
+
+pub using @core {type Sim}
+
+pub using @core {type TimerPlan}
+
+pub using @core {type TraceEntry}
+
+pub using @core {type ValidationIssue}
+
+pub using @core {type ValidationReport}
 
 // Traits
 
