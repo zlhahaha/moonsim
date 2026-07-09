@@ -1,41 +1,78 @@
-name: MoonBit
+name: Test
 
 on:
   push:
   pull_request:
 
 jobs:
-  verify:
-    name: Required verification
-    runs-on: ubuntu-latest
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install MoonBit
-        shell: bash
+      - name: Setup Moon env (Linux)
+        if: runner.os == 'Linux'
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | MOONBIT_INSTALL_DEV=1 bash
+          sudo apt-get update
+          sudo apt-get install -y gcc libssl-dev
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Show MoonBit version
-        run: moon version --all
+      - name: Setup Moon env (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install gcc openssl
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Check formatter flags
-        run: moon fmt --help
+      - name: Setup Moon env (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
+          echo "$HOME/.moon/bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      - name: Check info flags
-        run: moon info --help
+      - name: Setup MSYS2 + MinGW + openssl (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-openssl
 
-      - name: moon check
-        run: moon check
+      - name: Moon Check
+        run: |
+          moon fmt --check
+          moon check --deny-warn
+          moon info
+          git diff --exit-code
+          git status
 
-      - name: moon fmt --deny-warn
-        run: moon fmt --deny-warn
+      - name: Moon test
+        run: |
+          echo moon test
+          moon test --deny-warn --enable-coverage
+          moon coverage report -f summary
 
-      - name: moon info --deny-warn
-        run: moon info --deny-warn
+          moon coverage analyze
 
-      - name: moon test
-        run: moon test
+          # ffi test
+          echo moon test native
+          moon test --deny-warn --target native --enable-coverage
+          moon coverage report -f summary
+
+          moon coverage analyze
