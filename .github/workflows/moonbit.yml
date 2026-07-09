@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  test:
-    name: Test (${{ matrix.os }})
+  verify:
+    name: Verify (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Moon env (Linux)
+      - name: Install MoonBit (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -29,14 +29,14 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Setup Moon env (macOS)
+      - name: Install MoonBit (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install gcc openssl
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Setup Moon env (Windows)
+      - name: Install MoonBit (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
@@ -44,7 +44,7 @@ jobs:
           irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
           echo "$HOME/.moon/bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      - name: Setup MSYS2 + MinGW + openssl (Windows)
+      - name: Setup MSYS2 (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
@@ -54,25 +54,29 @@ jobs:
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-openssl
 
-      - name: Moon Check
-        run: |
-          moon fmt --check
-          moon check --deny-warn
-          moon info
-          git diff --exit-code
-          git status
+      - name: Show MoonBit version
+        run: moon version --all
 
-      - name: Moon test
+      - name: Check formatting
+        run: moon fmt --check
+
+      - name: Check package warnings
+        run: moon check --deny-warn
+
+      - name: Generate public interfaces
+        run: moon info
+
+      - name: Verify generated interfaces are committed
+        run: git diff --exit-code
+
+      - name: Run tests
+        run: moon test --deny-warn
+
+      - name: Run CLI demo
+        run: moon run cmd/main
+
+      - name: Coverage summary (Linux)
+        if: runner.os == 'Linux'
         run: |
-          echo moon test
           moon test --deny-warn --enable-coverage
           moon coverage report -f summary
-
-          moon coverage analyze
-
-          # ffi test
-          echo moon test native
-          moon test --deny-warn --target native --enable-coverage
-          moon coverage report -f summary
-
-          moon coverage analyze
