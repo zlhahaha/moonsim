@@ -1,129 +1,112 @@
-# Tutorial: Reproduce a Retry/Timeout Bug
+# Reproducing a Retry and Timeout Bug
 
-This tutorial shows the workflow moonsim is built for: turn a flaky distributed
-systems failure into a deterministic model test with a seed, a trace digest, and
-invariants that can be checked every time.
+This tutorial turns an intermittent retry/timeout problem into a deterministic model test. The example separates three facts that are often accidentally merged in production metrics:
 
-The example is a common retry/timeout bug. A request times out, a retry is
-scheduled, and the system later receives a success for one of the attempts. If
-the model only counts the final success, timeout metrics and SLO checks can look
-healthy even though callers already observed failures.
+1. whether a request eventually completed;
+2. whether the caller had already timed out;
+3. whether a late result arrived after that timeout.
 
-## 1. Run The Showcase
+The sequence under test is:
 
-From the repository root:
-
-```bash
-moon run cmd/main
+```text
+request starts -> first attempt times out -> retry is scheduled -> late success arrives
 ```
 
-The showcase prints the problem, runs the service resilience model, records a
-digest, replays the same seed, and checks whether the invariants pass.
+The root package is enough for this walkthrough:
 
-## 2. Reproduce With One Seed
+```bash
+moon add zlhahaha/moonsim
+```
 
-After installing the package with `moon add zlhahaha/moonsim`, start with a
-fixed seed:
+## 1. Baseline
+
+Start with a normal service configuration and a fixed seed.
 
 ```moonbit
-let result = @moonsim.run_service_resilience_suite(
-  config=@moonsim.service_resilience_config(
-    seed=2026UL,
-    requests=32,
-    fail_percent=6,
-    drop_percent=2,
-    timeout_ticks=16,
-    retry_limit=2,
-    min_success_percent=70,
-  ),
+let config = @moonsim.service_resilience_config(
+  seed=2026UL,
+  requests=32,
+  fail_percent=6,
+  drop_percent=2,
+  min_success_percent=70,
 )
-
-println(@moonsim.render_service_resilience_report(result))
-println("digest=" + result.digest.to_string())
+let result = @moonsim.run_service_resilience_suite(config~)
+println(result.line())
 println(result.invariants.render())
 assert_true(result.invariants.passed())
 ```
 
-The seed makes the run repeatable. The digest is a compact fingerprint of the
-trace and metrics, so a future run with the same configuration should produce
-the same digest.
+The result exposes `timed_out`, `retried`, `failed`, and `late_successes` separately. The digest is a compact identity for the generated trace.
 
-## 3. Add The Invariant That Catches The Bug
+## 2. Reproduce the fault
 
-For retry and timeout systems, useful invariants are usually business rules, not
-implementation details. The service resilience model checks rules such as:
-
-- every request is classified exactly once;
-- timeout outcomes are counted as failures;
-- queue depth stays inside the configured bound;
-- the observed success rate meets the configured SLO.
-
-The timeout rule is the important one for this bug class:
+Now make the client timeout shorter than the model's base latency. This deliberately creates a late-success condition and sets an intentionally strict success target.
 
 ```moonbit
-assert_true(result.timed_out <= result.failed)
-```
-
-If a timeout is hidden by a later success, this invariant fails and the seed can
-be replayed.
-
-## 4. Search A Seed Matrix
-
-One seed proves reproducibility. A small matrix gives confidence that the model
-is not only passing one lucky schedule:
-
-```moonbit
-let matrix = @moonsim.service_resilience_seed_matrix([
-  2024UL, 2025UL, 2026UL, 2027UL,
-])
-
-println(matrix.render())
-```
-
-When a row fails, keep the seed and digest in the issue or regression test. That
-is the evidence needed to replay the same ordering later.
-
-## 5. Verify The Fixed Run
-
-After fixing the model or production retry policy, keep the original failing
-seed and run it again:
-
-```moonbit
-let fixed = @moonsim.run_service_resilience_suite(
-  config=@moonsim.service_resilience_config(
-    seed=2026UL,
-    requests=32,
-    fail_percent=6,
-    drop_percent=2,
-    timeout_ticks=16,
-    retry_limit=2,
-    min_success_percent=70,
-  ),
+let fault_config = @moonsim.service_resilience_config(
+  seed=2026UL,
+  requests=32,
+  workers=8,
+  queue_limit=32,
+  timeout_ticks=1,
+  retry_limit=0,
+  base_latency=2,
+  jitter=0,
+  fail_percent=0,
+  drop_percent=0,
+  rate_limit_capacity=100,
+  rate_limit_refill=100,
+  min_success_percent=90,
 )
+let fault = @moonsim.run_service_resilience_suite(fault_config~)
+println(fault.line())
+println(fault.invariants.render())
+```
 
-println("fixed_digest=" + fixed.digest.to_string())
-println(fixed.invariants.render())
+Here `invariant=fail` is an expected test result, not a tool crash. The model has found that the chosen policy cannot meet the 90% target. The late result is reported explicitly instead of being hidden inside the final success count. The command still exits normally; a real code or CI failure is a failed `moon check`, `moon test`, or generated-interface diff.
+
+## 3. Replay the same seed
+
+Run the fault configuration again and compare the digest.
+
+```moonbit
+let replay = @moonsim.run_service_resilience_suite(fault_config~)
+assert_eq(fault.digest, replay.digest)
+```
+
+The same seed and configuration must produce the same event order and digest. This is the evidence needed to inspect one failure and turn it into a regression test.
+
+## 4. Fix and regress
+
+Increase the timeout to cover the model latency, then keep the original seed and target.
+
+```moonbit
+let fixed_config = @moonsim.service_resilience_config(
+  seed=2026UL,
+  requests=32,
+  workers=8,
+  queue_limit=32,
+  timeout_ticks=16,
+  retry_limit=0,
+  base_latency=2,
+  jitter=0,
+  fail_percent=0,
+  drop_percent=0,
+  rate_limit_capacity=100,
+  rate_limit_refill=100,
+  min_success_percent=90,
+)
+let fixed = @moonsim.run_service_resilience_suite(fixed_config~)
 assert_true(fixed.invariants.passed())
 ```
 
-The test should pass for the saved seed and for the wider seed matrix. That is
-the main value of deterministic simulation: the rare interleaving becomes a
-normal regression test.
+Finally scan more seeds with `service_resilience_seed_matrix`. Passing the original seed is necessary, but a seed matrix checks that the policy is not only correct for one sample.
 
-## 6. Keep It In CI
-
-For repository verification, run:
+The ready-to-run version of this story is also available through:
 
 ```bash
-moon fmt --check
-moon check --deny-warn
-moon info
-git diff --exit-code
-moon test --deny-warn
 moon run cmd/main
 moon run examples/service_resilience
 ```
 
-`moon info` plus `git diff --exit-code` ensures generated interface files stay
-committed. `moon run cmd/main` and the service example prove the package still
-works as an executable tool, not only as a collection of APIs.
+`moonsim` validates logical models and failure workflows. It does not replace real network, database, deployment, integration, or runtime monitoring tests.

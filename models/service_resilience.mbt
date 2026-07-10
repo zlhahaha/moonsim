@@ -24,6 +24,7 @@ pub(all) struct ServiceResilienceResult {
   completed : Int
   failed : Int
   timed_out : Int
+  late_successes : Int
   retried : Int
   rate_limited : Int
   circuit_rejected : Int
@@ -102,6 +103,7 @@ pub fn run_service_resilience_suite(
   let mut completed = 0
   let mut failed = 0
   let mut timed_out = 0
+  let mut late_successes = 0
   let mut retried = 0
   let mut rate_limited = 0
   let mut circuit_rejected = 0
@@ -191,6 +193,9 @@ pub fn run_service_resilience_suite(
       )
     } else if observed_latency > config.timeout_ticks {
       timed_out += 1
+      if success {
+        late_successes += 1
+      }
       failed += 1
       sim.inc_counter("service.timed_out")
       ignore(
@@ -211,8 +216,8 @@ pub fn run_service_resilience_suite(
     completed * 100 >= config.requests * config.min_success_percent
   }
   let invariants = service_resilience_invariants(
-    config, sim, accepted, rejected, completed, failed, timed_out, max_queue_depth,
-    slo_passed,
+    config, sim, accepted, rejected, completed, failed, timed_out, late_successes,
+    max_queue_depth, slo_passed,
   )
   {
     config,
@@ -221,6 +226,7 @@ pub fn run_service_resilience_suite(
     completed,
     failed,
     timed_out,
+    late_successes,
     retried,
     rate_limited,
     circuit_rejected,
@@ -283,6 +289,10 @@ pub fn ServiceResilienceResult::line(self : ServiceResilienceResult) -> String {
   self.rejected.to_string() +
   " failed=" +
   self.failed.to_string() +
+  " timed_out=" +
+  self.timed_out.to_string() +
+  " late_successes=" +
+  self.late_successes.to_string() +
   " success=" +
   self.success_percent().to_string() +
   "% slo=" +
@@ -301,6 +311,10 @@ pub fn render_service_resilience_report(
   buf.write_string(
     "retries=" +
     result.retried.to_string() +
+    " timed_out=" +
+    result.timed_out.to_string() +
+    " late_successes=" +
+    result.late_successes.to_string() +
     " rate_limited=" +
     result.rate_limited.to_string() +
     " circuit_rejected=" +
@@ -345,6 +359,7 @@ fn service_resilience_invariants(
   completed : Int,
   failed : Int,
   timed_out : Int,
+  late_successes : Int,
   max_queue_depth : Int,
   slo_passed : Bool,
 ) -> InvariantReport {
@@ -392,6 +407,13 @@ fn service_resilience_invariants(
         "timeouts_counted_as_failures",
         timed_out <= failed,
         detail=timed_out.to_string() + "<=" + failed.to_string(),
+      ),
+    )
+    .add(
+      invariant_check(
+        "late_successes_are_timeouts",
+        late_successes <= timed_out,
+        detail=late_successes.to_string() + "<=" + timed_out.to_string(),
       ),
     ),
   )

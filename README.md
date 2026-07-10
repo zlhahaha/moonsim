@@ -7,6 +7,37 @@ tests. It helps MoonBit projects describe system behavior with scenarios,
 metrics, snapshots, traces, and reusable model helpers without depending on
 wall-clock timing or a specific concurrency runtime.
 
+## Why This Exists
+
+A retry/timeout bug can look healthy if the only metric is eventual success:
+
+```text
+request starts
+-> first attempt times out
+-> retry is scheduled
+-> the original request succeeds late
+-> the retry also produces a result
+```
+
+`moonsim` keeps these observations separate: eventual completion,
+caller-visible timeout, and late success after a timeout. With virtual time, a
+fixed seed, trace digest, invariants, and replay, the same failure can be
+inspected and rerun as a regression test.
+
+### Relationship To Existing Tools
+
+`moonsim` builds on established ideas rather than claiming to replace them:
+
+- [SimPy](https://simpy.readthedocs.io/en/latest/index.html) primarily provides discrete-event simulation.
+- [Go fuzzing](https://go.dev/doc/security/fuzz/) explores inputs and retains failing inputs for regression.
+- Rust property-testing and randomized-testing tools provide related input and invariant exploration.
+- [FoundationDB's deterministic simulation testing](https://apple.github.io/foundationdb/testing.html) demonstrates the engineering value of reproducible simulation in complex systems.
+
+`moonsim` combines the relevant pieces into a MoonBit workflow for reliability
+models: virtual time, seeded randomness, trace/digest, invariants, and replay.
+It is not an actor runtime, a real-network test framework, or a general
+performance benchmark.
+
 ## Use Cases
 
 - Test retry, timeout, and backoff logic without waiting for wall-clock time.
@@ -61,6 +92,12 @@ moon run cmd/main
 The CLI demo starts from a retry/timeout reliability problem, runs a deterministic
 service model, replays the same seed, checks invariants, and prints the digest
 you can use to compare future runs.
+
+The `Fault reproduction` section intentionally prints
+`invariant=fail (expected demonstration)`. This is a model finding, so the
+showcase still exits successfully. A changed replay digest, a failed assertion
+in `moon test`, a failed `moon check`, or a generated-interface diff is a real
+verification failure.
 
 Minimal usage after `moon add zlhahaha/moonsim`:
 
@@ -121,6 +158,21 @@ moonrun 0.1.20260703 (6fbf8c3 2026-07-03)
 In this toolchain, `--deny-warn` is supported by `moon check` and `moon test`.
 Formatting is checked with `moon fmt --check`, and generated package interfaces
 are checked with `moon info` followed by `git diff --exit-code`.
+
+## Test Scale And Boundaries
+
+Use the smallest scale that answers the question:
+
+- Small event traces: fast unit tests for scheduling and invariants.
+- Medium scenarios: normal queue, retry, timeout, and state-machine model tests.
+- Multiple seeds: deterministic exploration of different event orderings.
+- Large event traces: pressure smoke tests for scheduler and trace handling.
+
+The project documents observed runs rather than claiming to be the fastest.
+Model tests complement, but do not replace, integration tests against real
+networks or databases, deployment tests, and production monitoring. A passing
+model means the modeled rules hold for the tested seeds and configuration; it
+does not prove that a production system is completely correct.
 
 ## API Preview
 
