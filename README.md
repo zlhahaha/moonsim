@@ -46,6 +46,10 @@ Install in another MoonBit project:
 moon add zlhahaha/moonsim
 ```
 
+The package is published under the `zlhahaha` MoonBit namespace. For local
+development, the repository itself can be checked and run with the commands
+below.
+
 Run this repository:
 
 ```bash
@@ -162,17 +166,6 @@ reliability suite.
   invariants.
 - `docs/testing.md`: local verification, CI checks, and release gates.
 - `docs/roadmap.md`: project roadmap.
-
-## Publishing
-
-Before publishing a release to mooncakes.io, run:
-
-```bash
-moon publish --dry-run
-moon publish
-```
-
-The dry run should be clean before the final publish command is used.
 
 ## Current Status
 
