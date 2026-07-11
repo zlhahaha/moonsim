@@ -117,3 +117,27 @@ pub fn Sim::record_transition(
     self.inc_counter("state.rejected")
   }
 }
+
+///|
+/// Projects accepted and rejected transitions into a causally linked event stream.
+pub fn StateMachine::event_stream(self : StateMachine) -> EventStream {
+  let stream = EventStream::new()
+  let mut parent_id = 0
+  let mut tick = 0
+  for result in self.history {
+    let event = stream.record(
+      StateTransition,
+      tick,
+      result.event,
+      correlation_id=self.name,
+      source=result.from,
+      target=result.to,
+      parent_id~,
+      payload=result.action,
+      failed=!result.accepted,
+    )
+    parent_id = event.id
+    tick += 1
+  }
+  stream
+}

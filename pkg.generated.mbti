@@ -46,7 +46,13 @@ pub fn diff_metrics(@core.MetricSnapshot, @core.MetricSnapshot) -> @core.MetricD
 
 pub fn duration(Int) -> @core.Duration
 
+pub fn event_failure_case(String, @core.EventStream, @core.EventMutationPolicy) -> @core.EventFailureCase
+
 pub fn event_id(Int) -> @core.EventId
+
+pub fn event_mutation_policy(seed? : UInt64, max_delay? : Int, delay_percent? : Int, drop_percent? : Int, duplicate_percent? : Int, reorder_same_tick? : Bool, failure_percent? : Int) -> @core.EventMutationPolicy
+
+pub fn event_stream() -> @core.EventStream
 
 pub fn expect_trace_contains_detail(Array[@core.TraceEntry], String) -> @core.TraceExpectation
 
@@ -61,6 +67,8 @@ pub fn expect_trace_monotonic_ticks(Array[@core.TraceEntry]) -> @core.TraceExpec
 pub fn expect_trace_order(Array[@core.TraceEntry], String, String) -> @core.TraceExpectation
 
 pub fn experiment_case(String, @models.ModelSummary, notes? : String) -> @reports.ExperimentCase
+
+pub fn external_call_event_kind() -> @core.EventKind
 
 pub fn find_demo(String) -> @reports.DemoDescriptor?
 
@@ -85,6 +93,8 @@ pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arr
 pub fn load_balancer_seed_matrix(Array[UInt64], strategy? : String) -> @models.SeedMatrix
 
 pub fn load_balancer_summary(@models.LoadBalancerResult) -> @models.ModelSummary
+
+pub fn message_event_kind() -> @core.EventKind
 
 pub fn metrics_counter_delta(@core.Metrics, @core.Metrics, String) -> Int
 
@@ -174,13 +184,19 @@ pub fn service_resilience_config(seed? : UInt64, requests? : Int, workers? : Int
 
 pub fn service_resilience_seed_matrix(Array[UInt64]) -> @models.SeedMatrix
 
+pub fn state_transition_event_kind() -> @core.EventKind
+
 pub fn sweep_load_balancer_strategies(seed? : UInt64, jobs? : Int) -> @reports.SweepReport
 
 pub fn sweep_point(String, @models.ModelSummary, score? : Int) -> @reports.SweepPoint
 
 pub fn sweep_reliability_failure_rates(seed? : UInt64) -> @reports.SweepReport
 
+pub fn task_event_kind() -> @core.EventKind
+
 pub fn tick(Int) -> @core.Tick
+
+pub fn timer_event_kind() -> @core.EventKind
 
 pub fn timer_plan(String, start_after? : Int, interval? : Int, times? : Int, priority? : Int) -> @core.TimerPlan
 
@@ -241,7 +257,21 @@ pub using @reports {type DemoDescriptor}
 
 pub using @core {type Duration}
 
+pub using @core {type EventFailureCase}
+
 pub using @core {type EventId}
+
+pub using @core {type EventKind}
+
+pub using @core {type EventMutationPolicy}
+
+pub using @core {type EventRecord}
+
+pub using @core {type EventReplayResult}
+
+pub using @core {type EventStream}
+
+pub using @core {type EventStreamSnapshot}
 
 pub using @core {type EventView}
 

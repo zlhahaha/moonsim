@@ -269,6 +269,7 @@ pub(all) struct QueueResult {
   digest : UInt64
   trace : Array[@core.TraceEntry]
 }
+pub fn QueueResult::event_stream(Self) -> @core.EventStream
 
 pub(all) struct RecordedHttpExchange {
   request : HttpRequest
@@ -282,6 +283,7 @@ pub(all) struct RecordedHttpTransport {
   exchanges : Array[RecordedHttpExchange]
   options : HttpReplayOptions
 }
+pub fn RecordedHttpTransport::event_stream(Self) -> @core.EventStream
 pub fn RecordedHttpTransport::failure_case(Self, policy? : HttpReliabilityPolicy) -> HttpFailureCase?
 pub fn RecordedHttpTransport::replay(Self, policy? : HttpReliabilityPolicy) -> HttpReplayResult
 pub fn RecordedHttpTransport::to_json(Self, policy? : HttpReliabilityPolicy) -> String
@@ -465,6 +467,7 @@ pub(all) struct WorkflowResult {
   runs : Array[WorkflowTaskRun]
   digest : UInt64
 }
+pub fn WorkflowResult::event_stream(Self) -> @core.EventStream
 pub fn WorkflowResult::render(Self) -> String
 pub fn WorkflowResult::summary(Self) -> ModelSummary
 
@@ -485,6 +488,20 @@ pub(all) struct WorkflowTaskRun {
 
 // Type aliases
 pub using @core {type Backoff}
+
+pub using @core {type EventFailureCase}
+
+pub using @core {type EventKind}
+
+pub using @core {type EventMutationPolicy}
+
+pub using @core {type EventRecord}
+
+pub using @core {type EventReplayResult}
+
+pub using @core {type EventStream}
+
+pub using @core {type EventStreamSnapshot}
 
 pub using @core {type InvariantCheck}
 

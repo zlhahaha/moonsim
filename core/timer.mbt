@@ -64,6 +64,29 @@ pub(all) struct TimerPlan {
 }
 
 ///|
+/// Projects a timer plan into the common deterministic event representation.
+pub fn TimerPlan::event_stream(self : TimerPlan) -> EventStream {
+  let stream = EventStream::new()
+  let mut index = 0
+  while index < self.times {
+    ignore(
+      stream.record(
+        timer_event_kind(),
+        self.start_after + index * self.interval,
+        "timer.fire",
+        correlation_id=self.name,
+        source="timer",
+        target=self.name,
+        payload="occurrence=" + (index + 1).to_string(),
+        priority=self.priority,
+      ),
+    )
+    index += 1
+  }
+  stream
+}
+
+///|
 pub fn timer_plan(
   name : String,
   start_after? : Int = 0,

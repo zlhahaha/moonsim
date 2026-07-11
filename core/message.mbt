@@ -104,3 +104,39 @@ pub fn MessageBus::pending(self : MessageBus, sim : Sim) -> Int {
   }
   count
 }
+
+///|
+/// Projects message send and delivery facts into the generic event stream.
+pub fn MessageBus::event_stream(self : MessageBus) -> EventStream {
+  let stream = EventStream::new()
+  for message in self.messages {
+    let correlation_id = "message:" + message.id.to_string()
+    let sent = stream.record(
+      Message,
+      message.send_tick,
+      "message.send",
+      correlation_id~,
+      source=message.from,
+      target=message.to,
+      payload=message.body,
+    )
+    ignore(
+      stream.record(
+        Message,
+        message.deliver_tick,
+        if message.dropped {
+          "message.drop"
+        } else {
+          "message.deliver"
+        },
+        correlation_id~,
+        source=message.from,
+        target=message.to,
+        parent_id=sent.id,
+        payload=message.body,
+        dropped=message.dropped,
+      ),
+    )
+  }
+  stream
+}

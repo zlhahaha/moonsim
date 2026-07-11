@@ -26,7 +26,13 @@ pub fn diff_metrics(MetricSnapshot, MetricSnapshot) -> MetricDiff
 
 pub fn duration(Int) -> Duration
 
+pub fn event_failure_case(String, EventStream, EventMutationPolicy) -> EventFailureCase
+
 pub fn event_id(Int) -> EventId
+
+pub fn event_mutation_policy(seed? : UInt64, max_delay? : Int, delay_percent? : Int, drop_percent? : Int, duplicate_percent? : Int, reorder_same_tick? : Bool, failure_percent? : Int) -> EventMutationPolicy
+
+pub fn event_record(EventKind, Int, String, correlation_id? : String, source? : String, target? : String, parent_id? : Int, payload? : String, priority? : Int, dropped? : Bool, failed? : Bool) -> EventRecord
 
 pub fn expect_trace_contains_detail(Array[TraceEntry], String) -> TraceExpectation
 
@@ -40,7 +46,11 @@ pub fn expect_trace_monotonic_ticks(Array[TraceEntry]) -> TraceExpectation
 
 pub fn expect_trace_order(Array[TraceEntry], String, String) -> TraceExpectation
 
+pub fn external_call_event_kind() -> EventKind
+
 pub fn invariant_check(String, Bool, detail? : String) -> InvariantCheck
+
+pub fn message_event_kind() -> EventKind
 
 pub fn metrics_counter_delta(Metrics, Metrics, String) -> Int
 
@@ -48,7 +58,13 @@ pub fn query_trace(Array[TraceEntry], TraceQuery) -> TraceQueryResult
 
 pub fn replay_baseline(String, Sim) -> ReplayBaseline
 
+pub fn state_transition_event_kind() -> EventKind
+
+pub fn task_event_kind() -> EventKind
+
 pub fn tick(Int) -> Tick
+
+pub fn timer_event_kind() -> EventKind
 
 pub fn timer_plan(String, start_after? : Int, interval? : Int, times? : Int, priority? : Int) -> TimerPlan
 
@@ -110,10 +126,86 @@ pub fn Duration::is_zero(Self) -> Bool
 pub fn Duration::scale(Self, Int) -> Self
 pub fn Duration::to_int(Self) -> Int
 
+pub(all) struct EventFailureCase {
+  seed : UInt64
+  rule : String
+  digest : UInt64
+  events : Array[EventRecord]
+  policy : EventMutationPolicy
+  source_events : Array[EventRecord]
+}
+pub fn EventFailureCase::replay(Self) -> EventReplayResult
+
 pub(all) struct EventId {
   value : Int
 } derive(Eq, @debug.Debug)
 pub fn EventId::to_int(Self) -> Int
+
+pub enum EventKind {
+  Message
+  Task
+  Timer
+  StateTransition
+  ExternalCall
+}
+pub fn EventKind::label(Self) -> String
+
+pub(all) struct EventMutationPolicy {
+  seed : UInt64
+  max_delay : Int
+  delay_percent : Int
+  drop_percent : Int
+  duplicate_percent : Int
+  reorder_same_tick : Bool
+  failure_percent : Int
+}
+
+pub(all) struct EventRecord {
+  id : Int
+  kind : EventKind
+  tick : Int
+  priority : Int
+  correlation_id : String
+  source : String
+  target : String
+  label : String
+  parent_id : Int
+  payload : String
+  dropped : Bool
+  failed : Bool
+}
+
+pub(all) struct EventReplayResult {
+  seed : UInt64
+  digest : UInt64
+  events : Array[EventRecord]
+  scheduled : Int
+  dropped : Int
+  duplicated : Int
+  failed : Int
+}
+pub fn EventReplayResult::invariants(Self) -> InvariantReport
+pub fn EventReplayResult::matches_digest(Self, Self) -> Bool
+
+pub(all) struct EventStream {
+  mut next_id : Int
+  mut events : Array[EventRecord]
+}
+pub fn EventStream::append(Self, EventRecord) -> EventRecord
+pub fn EventStream::digest(Self) -> UInt64
+pub fn EventStream::events(Self) -> Array[EventRecord]
+pub fn EventStream::invariants(Self) -> InvariantReport
+pub fn EventStream::new() -> Self
+pub fn EventStream::ordered(Self) -> Array[EventRecord]
+pub fn EventStream::record(Self, EventKind, Int, String, correlation_id? : String, source? : String, target? : String, parent_id? : Int, payload? : String, priority? : Int, dropped? : Bool, failed? : Bool) -> EventRecord
+pub fn EventStream::replay(Self, EventMutationPolicy) -> EventReplayResult
+pub fn EventStream::restore(Self, EventStreamSnapshot) -> Unit
+pub fn EventStream::snapshot(Self) -> EventStreamSnapshot
+
+pub(all) struct EventStreamSnapshot {
+  next_id : Int
+  events : Array[EventRecord]
+}
 
 pub(all) struct EventView {
   id : Int
@@ -178,6 +270,7 @@ pub(all) struct MessageBus {
 }
 pub fn MessageBus::deliver_due(Self, Sim) -> Int
 pub fn MessageBus::drop(Self, Sim, Int) -> Bool
+pub fn MessageBus::event_stream(Self) -> EventStream
 pub fn MessageBus::messages(Self) -> Array[Message]
 pub fn MessageBus::new() -> Self
 pub fn MessageBus::pending(Self, Sim) -> Int
@@ -455,6 +548,7 @@ pub(all) struct StateMachine {
   mut history : Array[TransitionResult]
 }
 pub fn StateMachine::add(Self, Transition) -> Self
+pub fn StateMachine::event_stream(Self) -> EventStream
 pub fn StateMachine::history(Self) -> Array[TransitionResult]
 pub fn StateMachine::new(String, String) -> Self
 pub fn StateMachine::send(Self, String) -> TransitionResult
@@ -494,6 +588,7 @@ pub(all) struct TimerPlan {
   times : Int
   priority : Int
 }
+pub fn TimerPlan::event_stream(Self) -> EventStream
 
 pub(all) struct TraceComparison {
   matched : Bool

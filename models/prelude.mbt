@@ -26,6 +26,27 @@ pub type TimerPlan = @core.TimerPlan
 pub type MessageBus = @core.MessageBus
 
 ///|
+pub type EventKind = @core.EventKind
+
+///|
+pub type EventRecord = @core.EventRecord
+
+///|
+pub type EventStream = @core.EventStream
+
+///|
+pub type EventStreamSnapshot = @core.EventStreamSnapshot
+
+///|
+pub type EventMutationPolicy = @core.EventMutationPolicy
+
+///|
+pub type EventReplayResult = @core.EventReplayResult
+
+///|
+pub type EventFailureCase = @core.EventFailureCase
+
+///|
 pub fn trace_entry(
   tick : Int,
   event_id : Int,

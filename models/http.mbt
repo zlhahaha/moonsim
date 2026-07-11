@@ -532,6 +532,40 @@ fn outcome_summary(outcome : HttpOutcome) -> String {
 }
 
 ///|
+/// Projects recorded calls into the common external-call event representation.
+pub fn RecordedHttpTransport::event_stream(
+  self : RecordedHttpTransport,
+) -> EventStream {
+  let stream = EventStream::new()
+  for exchange in self.exchanges {
+    let correlation_id = "http:" + exchange.request.id
+    let request_event = stream.record(
+      @core.external_call_event_kind(),
+      exchange.started_tick,
+      "external.request",
+      correlation_id~,
+      source=exchange.request.http_method,
+      target=exchange.request.path,
+      payload="attempt=" + exchange.request.attempt.to_string(),
+    )
+    ignore(
+      stream.record(
+        @core.external_call_event_kind(),
+        exchange.started_tick + exchange.latency_ticks,
+        "external.response",
+        correlation_id~,
+        source="external",
+        target=exchange.request.path,
+        parent_id=request_event.id,
+        payload=outcome_summary(exchange.outcome),
+        failed=!outcome_is_success(exchange.outcome),
+      ),
+    )
+  }
+  stream
+}
+
+///|
 fn started_at_count(
   exchanges : Array[RecordedHttpExchange],
   index : Int,

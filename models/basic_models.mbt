@@ -86,6 +86,26 @@ pub fn run_queue_model(config : QueueConfig) -> QueueResult {
 }
 
 ///|
+/// Projects queue arrivals and completions into the shared message event stream.
+pub fn QueueResult::event_stream(self : QueueResult) -> EventStream {
+  let stream = EventStream::new()
+  for entry in self.trace {
+    ignore(
+      stream.record(
+        @core.message_event_kind(),
+        entry.tick,
+        entry.kind,
+        correlation_id=entry.event_id.to_string(),
+        source="queue",
+        target="worker",
+        payload=entry.detail,
+      ),
+    )
+  }
+  stream
+}
+
+///|
 pub(all) struct RetryConfig {
   seed : UInt64
   max_attempts : Int

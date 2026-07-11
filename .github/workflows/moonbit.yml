@@ -80,9 +80,11 @@ jobs:
 
       - name: Run example smoke tests
         run: |
+          moon run examples/queue
           moon run examples/service_resilience
           moon run examples/workflow
           moon run examples/seed_matrix
+          moon run cmd/benchmark
 
       - name: Coverage summary (Linux)
         if: runner.os == 'Linux'

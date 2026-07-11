@@ -216,3 +216,34 @@ pub fn WorkflowResult::render(self : WorkflowResult) -> String {
   }
   buf.to_string()
 }
+
+///|
+/// Projects completed workflow runs into the shared task event stream.
+pub fn WorkflowResult::event_stream(self : WorkflowResult) -> EventStream {
+  let stream = EventStream::new()
+  for run in self.runs {
+    let correlation_id = "workflow:" + run.id.to_string()
+    let started = stream.record(
+      @core.task_event_kind(),
+      run.start_tick,
+      "task.start",
+      correlation_id~,
+      source="scheduler",
+      target=run.name,
+      payload="worker=" + run.worker.to_string(),
+    )
+    ignore(
+      stream.record(
+        @core.task_event_kind(),
+        run.finish_tick,
+        "task.finish",
+        correlation_id~,
+        source="worker",
+        target=run.name,
+        parent_id=started.id,
+        payload="worker=" + run.worker.to_string(),
+      ),
+    )
+  }
+  stream
+}

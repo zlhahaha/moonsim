@@ -1,69 +1,32 @@
-# API 概览
+# 类型化事件流 API
 
-大多数用户只需导入根包：
+大多数用户只需 `import { "zlhahaha/moonsim" }`。根包导出常用事件流、模型、invariant 与报告接口；`core`、`models`、`reports` 是进阶入口。
 
-```moonbit
-import { "zlhahaha/moonsim" }
-```
+## 五种稳定事件
 
-根包提供稳定 facade；内部的 `core`、`models` 和 `reports` 包用于按领域组织实现，不要求普通用户直接依赖。
+`EventKind` 是封闭枚举：`Message`、`Task`、`Timer`、`StateTransition`、`ExternalCall`。它们分别表达消息事实、任务生命周期、时间触发、状态转移与外部交互记录。Queue、数据库、MQ 等不会自动连接真实基础设施，应由适配器或上层模型映射到这些稳定语义。
 
-## core：确定性执行内核
+`EventRecord` 保留稳定的 `id`、`correlation_id`、`source`、`target`、`label`、`tick`、`priority` 和 `parent_id`，以及用于证据的 `payload`、`dropped`、`failed`。
 
-- `Sim`：虚拟时间模拟器，负责事件安排、执行、trace 与 digest。
-- 事件顺序：严格按 `(tick, priority, id)` 排序；同 tick 的结果稳定可解释。
-- snapshot/restore：保存待执行事件和取消状态，恢复后相同后续输入应得到相同 digest。
-- `InvariantReport`：收集业务规则，通过 `passed()` 判断是否全部满足。
+## EventStream
 
-调度器使用私有稳定最小堆。其实现细节不属于用户 API，但取消事件、同 tick 优先级和恢复后的顺序均有测试覆盖。
+- `event_stream()` / `EventStream::new()`：创建流。
+- `record()` / `append()`：追加事件，自动分配稳定 id。
+- `ordered()`：按 `(tick, priority, id)` 得到确定顺序。
+- `digest()`：计算稳定摘要。
+- `snapshot()` / `restore()`：保存和恢复输入状态。
+- `replay(policy)`：按固定 seed 执行变异并返回 `EventReplayResult`。
 
-## models：HTTP 可靠性记录与重放
+## 变异与失败证据
 
-### 基本类型
+`event_mutation_policy` 支持可控延迟、丢弃、重复、同 tick 乱序和失败注入，百分比会被规范到 0..100，所有随机选择都由 seed 决定。
 
-- `HttpRequest`：`id`、`http_method`、`path`、`attempt`。
-- `HttpResponse`：HTTP `status` 与 `body_summary`。
-- `HttpOutcome`：`Response`、`ConnectionFailure` 或 `Cancelled`。
-- `RecordedHttpExchange`：一次请求的开始 tick、延迟和结果。
+`EventReplayResult` 包含 seed、digest、有序事件与 scheduled/dropped/duplicated/failed 计数。`EventFailureCase` 额外保存失败 invariant 名称、源事件和策略；`replay()` 使用相同输入与 seed 重现证据。
 
-使用构造函数创建这些值：`http_request`、`http_response`、`recorded_http_exchange`。
+框架内置 invariant 检查事件 id、非负 tick 和父事件先于子事件。诸如“最终分类一次”“依赖未完成不可执行”“终态不可回退”属于业务规则，应由模型基于事件证据检查。
 
-### 传输记录与策略
+## 兼容模型
 
-`RecordedHttpTransport` 表示一个命名场景及其交换记录：
+`MessageBus::event_stream()`、`TimerPlan::event_stream()`、`StateMachine::event_stream()`、`WorkflowResult::event_stream()`、Queue 结果与 HTTP recording 都可映射到通用流。现有 facade API 保留；HTTP API 是 `ExternalCall` 适配示例，而非项目中心。
 
-```moonbit
-let transport = @moonsim.recorded_http_transport(
-  "checkout-timeout",
-  exchanges,
-  options=@moonsim.http_replay_options(latency_jitter=1),
-)
-```
-
-`HttpReliabilityPolicy` 由 `http_reliability_policy` 创建，配置 `seed`、timeout、retry limit、backoff、每 tick 限流、熔断阈值/恢复时间、业务 deadline 和 `accept_late_success`。`HttpReplayOptions` 可以用固定 seed 对延迟、连接失败百分比和同 tick 顺序进行确定性变异。
-
-调用 `transport.replay(policy=...)` 返回 `HttpReplayResult`，其中包括：
-
-- `http_successes`、`on_time_successes`、`late_successes`；
-- `timed_out`、`connection_failures`、`cancelled`、`deadline_misses`；
-- `duplicate_processed`、`retry_limit_violations`、`rate_limited`、`circuit_rejected`；
-- `invariants`、`trace` 与 `digest`。
-
-`transport.to_json(policy=...)` 输出稳定的 JSON 证据。它仅序列化模型记录，不进行真实网络 I/O。
-
-### 失败证据与回归
-
-`transport.failure_case(policy=...)` 在有不变量失败时返回 `HttpFailureCase`。该对象保存场景、原策略、seed、失败规则、digest、交换记录和重放选项：
-
-- `evidence.replay()`：用原配置稳定重放。
-- `evidence.verify_fixed_policy(policy)`：用修复策略和原失败 seed 回归。
-
-`retry_timeout_recording()`、`retry_timeout_fault_policy()` 和 `retry_timeout_fixed_policy()` 是可运行的教学 fixture，也可作为自定义记录的参照。
-
-## reports：实验结果
-
-报告层提供 experiment、seed matrix、feature matrix、timeline 和文本渲染能力。它们用于将一批确定性运行汇总为可读结果；具体用法可见 [示例索引](examples.md)。
-
-## 设计边界
-
-这些 API 描述逻辑模型而非真实客户端。请在真实 HTTP、数据库或端到端测试之外使用它们，作为可复现故障、策略验证和回归测试的补充。
+0.3.x 稳定承诺覆盖五种 `EventKind`、事件标识/关联/因果字段和根包构造入口。未来适配器可以新增 label 和模型，但不承诺自动驱动真实数据库、HTTP 或 MQ。

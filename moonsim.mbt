@@ -128,6 +128,27 @@ pub type TraceStats = @core.TraceStats
 pub type EventView = @core.EventView
 
 ///|
+pub type EventKind = @core.EventKind
+
+///|
+pub type EventRecord = @core.EventRecord
+
+///|
+pub type EventStream = @core.EventStream
+
+///|
+pub type EventStreamSnapshot = @core.EventStreamSnapshot
+
+///|
+pub type EventMutationPolicy = @core.EventMutationPolicy
+
+///|
+pub type EventReplayResult = @core.EventReplayResult
+
+///|
+pub type EventFailureCase = @core.EventFailureCase
+
+///|
 pub type Backoff = @core.Backoff
 
 ///|
@@ -264,7 +285,7 @@ pub type HttpFailureCase = @models.HttpFailureCase
 
 ///|
 pub fn version() -> String {
-  "0.2.0"
+  "0.3.0"
 }
 
 ///|
@@ -1094,4 +1115,65 @@ pub fn retry_timeout_fault_policy() -> HttpReliabilityPolicy {
 ///|
 pub fn retry_timeout_fixed_policy() -> HttpReliabilityPolicy {
   @models.retry_timeout_fixed_policy()
+}
+
+///|
+/// Create a generic deterministic event stream.
+pub fn event_stream() -> EventStream {
+  @core.EventStream::new()
+}
+
+///|
+pub fn message_event_kind() -> EventKind {
+  @core.message_event_kind()
+}
+
+///|
+pub fn task_event_kind() -> EventKind {
+  @core.task_event_kind()
+}
+
+///|
+pub fn timer_event_kind() -> EventKind {
+  @core.timer_event_kind()
+}
+
+///|
+pub fn state_transition_event_kind() -> EventKind {
+  @core.state_transition_event_kind()
+}
+
+///|
+pub fn external_call_event_kind() -> EventKind {
+  @core.external_call_event_kind()
+}
+
+///|
+pub fn event_mutation_policy(
+  seed? : UInt64 = 1UL,
+  max_delay? : Int = 0,
+  delay_percent? : Int = 0,
+  drop_percent? : Int = 0,
+  duplicate_percent? : Int = 0,
+  reorder_same_tick? : Bool = false,
+  failure_percent? : Int = 0,
+) -> EventMutationPolicy {
+  @core.event_mutation_policy(
+    seed~,
+    max_delay~,
+    delay_percent~,
+    drop_percent~,
+    duplicate_percent~,
+    reorder_same_tick~,
+    failure_percent~,
+  )
+}
+
+///|
+pub fn event_failure_case(
+  rule : String,
+  source : EventStream,
+  policy : EventMutationPolicy,
+) -> EventFailureCase {
+  @core.event_failure_case(rule, source, policy)
 }

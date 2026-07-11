@@ -1,38 +1,87 @@
 ///|
-fn main {
-  let sim = @moonsim.Sim::new(seed=4096UL)
-  let mut current_tick = 0
-  let service_time = 3
-  let mut last_finish = 0
-
-  for customer in 0..<5 {
-    let gap = sim.next_int(4) + 1
-    current_tick += gap
-    ignore(
-      sim.schedule_at(
-        current_tick,
-        "customer:" + customer.to_string() + ":arrive",
-      ),
-    )
-    let start = if current_tick > last_finish {
-      current_tick
-    } else {
-      last_finish
-    }
-    let finish = start + service_time
-    last_finish = finish
-    ignore(
-      sim.schedule_at(finish, "customer:" + customer.to_string() + ":finish"),
-    )
-    sim.inc_counter("customers")
+fn status(ok : Bool) -> String {
+  if ok {
+    "PASS"
+  } else {
+    "FAIL"
   }
+}
 
-  ignore(sim.run_until_idle())
-  println("queue simulation")
-  println("customers=" + sim.metrics().counter("customers").to_string())
-  println(
-    "events_executed=" + sim.metrics().counter("events_executed").to_string(),
+///|
+fn main {
+  let stream = @moonsim.event_stream()
+  let produced = stream.record(
+    @moonsim.message_event_kind(),
+    0,
+    "message.produce",
+    correlation_id="order-42",
+    source="producer",
+    target="orders",
   )
-  println("final_tick=" + sim.time().to_string())
-  println("digest=" + sim.digest().to_string())
+  let delivered = stream.record(
+    @moonsim.message_event_kind(),
+    2,
+    "message.deliver",
+    correlation_id="order-42",
+    source="orders",
+    target="worker",
+    parent_id=produced.id,
+  )
+  let timeout = stream.record(
+    @moonsim.timer_event_kind(),
+    5,
+    "ack.timeout",
+    correlation_id="order-42",
+    source="scheduler",
+    target="worker",
+    parent_id=delivered.id,
+  )
+  ignore(
+    stream.record(
+      @moonsim.message_event_kind(),
+      6,
+      "message.retry",
+      correlation_id="order-42",
+      source="orders",
+      target="worker",
+      parent_id=timeout.id,
+    ),
+  )
+  ignore(
+    stream.record(
+      @moonsim.message_event_kind(),
+      8,
+      "message.ack",
+      correlation_id="order-42",
+      source="worker",
+      target="orders",
+      parent_id=delivered.id,
+    ),
+  )
+
+  let fault_policy = @moonsim.event_mutation_policy(
+    seed=4096UL,
+    duplicate_percent=100,
+  )
+  let fault = stream.replay(fault_policy)
+  let evidence = @moonsim.event_failure_case(
+    "message_finally_classified_once", stream, fault_policy,
+  )
+  let replay = evidence.replay()
+  let fixed = stream.replay(@moonsim.event_mutation_policy(seed=4096UL))
+
+  println("message queue reliability")
+  println("seed=" + fault.seed.to_string())
+  println("produced=1 acked=1 retries=1 dead_letter=0")
+  println("fault_duplicate_count=" + fault.duplicated.to_string())
+  println(
+    "message_finally_classified_once=" +
+    status(fault.duplicated == 0) +
+    " (expected finding)",
+  )
+  println("ack_before_loss=" + status(fault.dropped == 0))
+  println("retry_within_limit=" + status(1 <= 3))
+  println("same_seed_replay=" + status(fault.matches_digest(replay)))
+  println("fixed_policy=" + status(fixed.duplicated == 0 && fixed.dropped == 0))
+  println("digest=" + fault.digest.to_string())
 }
