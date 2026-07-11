@@ -236,8 +236,35 @@ pub type ServiceResilienceConfig = @models.ServiceResilienceConfig
 pub type ServiceResilienceResult = @models.ServiceResilienceResult
 
 ///|
+pub type HttpRequest = @models.HttpRequest
+
+///|
+pub type HttpResponse = @models.HttpResponse
+
+///|
+pub type HttpOutcome = @models.HttpOutcome
+
+///|
+pub type RecordedHttpExchange = @models.RecordedHttpExchange
+
+///|
+pub type HttpReliabilityPolicy = @models.HttpReliabilityPolicy
+
+///|
+pub type HttpReplayOptions = @models.HttpReplayOptions
+
+///|
+pub type RecordedHttpTransport = @models.RecordedHttpTransport
+
+///|
+pub type HttpReplayResult = @models.HttpReplayResult
+
+///|
+pub type HttpFailureCase = @models.HttpFailureCase
+
+///|
 pub fn version() -> String {
-  "0.1.0"
+  "0.2.0"
 }
 
 ///|
@@ -960,4 +987,111 @@ pub fn render_model_summaries(summaries : Array[ModelSummary]) -> String {
 ///|
 pub fn render_experiment_report(report : ExperimentReport) -> String {
   @reports.render_experiment_report(report)
+}
+
+///|
+pub fn http_request(
+  id : String,
+  http_method? : String = "GET",
+  path? : String = "/",
+  attempt? : Int = 1,
+) -> HttpRequest {
+  @models.http_request(id, http_method~, path~, attempt~)
+}
+
+///|
+pub fn http_response(status : Int, body_summary? : String = "") -> HttpResponse {
+  @models.http_response(status, body_summary~)
+}
+
+///|
+pub fn http_response_outcome(response : HttpResponse) -> HttpOutcome {
+  @models.Response(response)
+}
+
+///|
+pub fn http_connection_failure_outcome(detail : String) -> HttpOutcome {
+  @models.ConnectionFailure(detail)
+}
+
+///|
+pub fn http_cancelled_outcome() -> HttpOutcome {
+  @models.Cancelled
+}
+
+///|
+pub fn recorded_http_exchange(
+  request : HttpRequest,
+  outcome : HttpOutcome,
+  started_tick? : Int = 0,
+  latency_ticks? : Int = 0,
+) -> RecordedHttpExchange {
+  @models.recorded_http_exchange(
+    request,
+    outcome,
+    started_tick~,
+    latency_ticks~,
+  )
+}
+
+///|
+pub fn http_reliability_policy(
+  seed? : UInt64 = 1UL,
+  retry_limit? : Int = 2,
+  timeout_ticks? : Int = 10,
+  backoff_ticks? : Int = 1,
+  deadline_ticks? : Int = 30,
+  rate_limit_per_tick? : Int = 0,
+  circuit_failure_threshold? : Int = 3,
+  circuit_reset_ticks? : Int = 10,
+  accept_late_success? : Bool = false,
+) -> HttpReliabilityPolicy {
+  @models.http_reliability_policy(
+    seed~,
+    retry_limit~,
+    timeout_ticks~,
+    backoff_ticks~,
+    deadline_ticks~,
+    rate_limit_per_tick~,
+    circuit_failure_threshold~,
+    circuit_reset_ticks~,
+    accept_late_success~,
+  )
+}
+
+///|
+pub fn http_replay_options(
+  latency_jitter? : Int = 0,
+  injected_failure_percent? : Int = 0,
+  reverse_same_tick_order? : Bool = false,
+) -> HttpReplayOptions {
+  @models.http_replay_options(
+    latency_jitter~,
+    injected_failure_percent~,
+    reverse_same_tick_order~,
+  )
+}
+
+///|
+pub fn recorded_http_transport(
+  scenario : String,
+  exchanges : Array[RecordedHttpExchange],
+  options? : HttpReplayOptions = @models.http_replay_options(),
+) -> RecordedHttpTransport {
+  @models.recorded_http_transport(scenario, exchanges, options~)
+}
+
+///|
+pub fn retry_timeout_recording() -> RecordedHttpTransport {
+  @models.retry_timeout_recording()
+}
+
+///|
+pub fn retry_timeout_fault_policy() -> HttpReliabilityPolicy {
+  @models.retry_timeout_fault_policy()
+}
+
+///|
+pub fn retry_timeout_fixed_policy() -> HttpReliabilityPolicy {
+  @models.retry_timeout_fixed_policy()
 }

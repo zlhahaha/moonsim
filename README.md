@@ -1,228 +1,111 @@
 # moonsim
 
-Deterministic simulation and model testing toolkit for MoonBit.
+**MoonBit 的确定性模拟与模型测试工具。**
 
-`moonsim` provides a reusable virtual-time toolkit for deterministic model
-tests. It helps MoonBit projects describe system behavior with scenarios,
-metrics, snapshots, traces, and reusable model helpers without depending on
-wall-clock timing or a specific concurrency runtime.
+`moonsim` 用虚拟时间、固定 seed、事件轨迹和业务不变量，把 retry、timeout、迟到成功、限流和熔断等偶发可靠性问题变成可重复运行的模型案例。它适合在真实集成测试之前或之后，稳定地复现一个已经观察到的故障，并把修复过程沉淀为回归测试。
 
-## Why This Exists
+> Deterministic simulation and model testing for MoonBit.
 
-A retry/timeout bug can look healthy if the only metric is eventual success:
+## 它解决什么问题
 
-```text
-request starts
--> first attempt times out
--> retry is scheduled
--> the original request succeeds late
--> the retry also produces a result
-```
+一个常见的 HTTP 可靠性问题如下：请求超时后系统发起 retry，而第一次请求的迟到成功随后到达。如果只统计最终成功数，重复处理或截止时间后的成功可能被掩盖。wall-clock 测试通常难以稳定重现这类时序。
 
-`moonsim` keeps these observations separate: eventual completion,
-caller-visible timeout, and late success after a timeout. With virtual time, a
-fixed seed, trace digest, invariants, and replay, the same failure can be
-inspected and rerun as a regression test.
+`moonsim` 让同一份记录在相同策略和 seed 下得到相同的事件顺序与 trace digest；当不变量失败时，可以保存失败 seed 和 HTTP 交换记录，调整策略后再用原 seed 回归验证。
 
-### Relationship To Existing Tools
+它与其他生态的工具有相通之处：SimPy 强调离散事件模拟，属性测试和 fuzzing 用随机输入探索状态空间，FoundationDB 展示了确定性模拟对复杂系统测试的工程价值。`moonsim` 不重复实现这些生态，而是将虚拟时间、seed、trace、digest、invariant、replay 和可靠性模型组合为 MoonBit 可直接使用的工作流。
 
-`moonsim` builds on established ideas rather than claiming to replace them:
+## 安装与最小示例
 
-- [SimPy](https://simpy.readthedocs.io/en/latest/index.html) primarily provides discrete-event simulation.
-- [Go fuzzing](https://go.dev/doc/security/fuzz/) explores inputs and retains failing inputs for regression.
-- Rust property-testing and randomized-testing tools provide related input and invariant exploration.
-- [FoundationDB's deterministic simulation testing](https://apple.github.io/foundationdb/testing.html) demonstrates the engineering value of reproducible simulation in complex systems.
-
-`moonsim` combines the relevant pieces into a MoonBit workflow for reliability
-models: virtual time, seeded randomness, trace/digest, invariants, and replay.
-It is not an actor runtime, a real-network test framework, or a general
-performance benchmark.
-
-## Use Cases
-
-- Test retry, timeout, and backoff logic without waiting for wall-clock time.
-- Model queues, schedulers, state machines, and small protocols.
-- Replay game-loop or model decisions from the same seed.
-- Compare two strategies from the same checkpoint.
-- Produce stable traces, digests, and metrics for regression tests.
-
-## Focus
-
-`moonsim` is not an Actor framework or a backend concurrency runtime. Message
-delivery is one optional model helper; the main API is built around `Sim`,
-scenarios, metrics, snapshots, trace/replay, and reusable system models.
-
-## Core Features
-
-- Virtual simulation time based on deterministic ticks.
-- Stable event scheduling with delay, cancellation, and run limits.
-- Seeded random number generation for reproducible runs.
-- Trace recording, trace formatting, and deterministic digests.
-- Trace querying, replay baselines, and structured comparison reports.
-- Metrics for counters, gauges, samples, summaries, distributions, and diffs.
-- Scenario and scenario-suite helpers for readable model tests.
-- Snapshot, restore, and fork comparison helpers.
-- Reusable model helpers for timers, backoff, state machines, messages,
-  network delivery, load balancing, circuit breakers, and token buckets.
-- Service reliability model suite for queues, retries, rate limits, circuit
-  breakers, SLO invariants, seed matrices, and replayable digests.
-- Workflow scheduling, parameter sweeps, and invariant checks for model suites.
-- Multi-seed regression matrices for exploring deterministic variability.
-
-## Quick Start
-
-Install in another MoonBit project:
+安装已发布的包：
 
 ```bash
 moon add zlhahaha/moonsim
 ```
 
-The package is published under the `zlhahaha` MoonBit namespace. For local
-development, the repository itself can be checked and run with the commands
-below.
-
-Run this repository:
-
-```bash
-moon check
-moon test
-moon run cmd/main
-```
-
-The CLI demo starts from a retry/timeout reliability problem, runs a deterministic
-service model, replays the same seed, checks invariants, and prints the digest
-you can use to compare future runs.
-
-The `Fault reproduction` section intentionally prints
-`invariant=fail (expected demonstration)`. This is a model finding, so the
-showcase still exits successfully. A changed replay digest, a failed assertion
-in `moon test`, a failed `moon check`, or a generated-interface diff is a real
-verification failure.
-
-Minimal usage after `moon add zlhahaha/moonsim`:
+创建一个 MoonBit 包后，使用根包入口即可，不需要了解内部目录结构：
 
 ```moonbit
-let result = @moonsim.run_service_resilience_suite(
-  config=@moonsim.service_resilience_config(seed=2026UL, requests=32),
-)
+import { "zlhahaha/moonsim" }
 
-println(@moonsim.render_service_resilience_report(result))
-assert_true(result.invariants.passed())
+fn main {
+  let recording = @moonsim.retry_timeout_recording()
+  let fault = @moonsim.retry_timeout_fault_policy()
+  let result = recording.replay(policy=fault)
+
+  println(
+    "fault_invariant=" +
+    (if result.invariants.passed() { "pass" } else { "fail" }),
+  )
+  println("trace_digest=" + result.digest.to_string())
+
+  match recording.failure_case(policy=fault) {
+    Some(evidence) => {
+      let fixed = evidence.verify_fixed_policy(
+        @moonsim.retry_timeout_fixed_policy(),
+      )
+      println(
+        "fixed_invariant=" +
+        (if fixed.invariants.passed() { "pass" } else { "fail" }),
+      )
+    }
+    None => println("fault case was not reproduced"),
+  }
+}
 ```
 
-For a step-by-step workflow that starts from a retry/timeout bug and ends with a
-replayable fixed run, read `docs/tutorial.md`.
+该故障 fixture 有意允许迟到成功被接受，因此 `fault_invariant=fail` 是**预期的检测结果**，不是工具崩溃。修复策略会拒绝迟到成功，`fixed_invariant=pass`。同一 seed 的两次 replay digest 必须一致；不一致才表示确定性语义出现问题。
 
-## Package Layout
+## HTTP 记录与重放
 
-The root package remains the stable facade for application code and examples:
+`moonsim` 不在库内发起真实 HTTP 请求。真实集成测试、日志采集或外部适配器负责取得请求和结果，再将它们表示为 `RecordedHttpExchange`。`RecordedHttpTransport` 在虚拟时间中回放记录，并可通过固定 seed 注入延迟、连接失败或同 tick 顺序变异。
 
-- `zlhahaha/moonsim`: common facade for simulation, models, reports, and
-  quick-start examples.
-- `zlhahaha/moonsim/core`: focused entry points for virtual time, scheduling,
-  deterministic RNG, traces, replay, invariants, and validation.
-- `zlhahaha/moonsim/models`: reusable queue, retry, network, load-balancing,
-  workflow, and service reliability models.
-- `zlhahaha/moonsim/reports`: text reports, feature matrices, demo catalogs,
-  and trace/metrics summaries.
+可靠性策略包含 timeout、retry/backoff、业务 deadline、限流和熔断参数。结果明确区分 HTTP 成功、截止时间内成功、迟到成功、重复处理、超时和取消。`to_json()` 会输出稳定的 JSON 证据，便于保存场景名、seed、请求/响应摘要、失败规则与 digest。
 
-Most users can start with the root package and move to the focused packages
-when they want clearer module boundaries.
+详细的故障复现流程见 [教程](docs/tutorial.md)，公开 API 见 [API 文档](docs/api.md)。
 
-## Verification
-
-The repository is kept checkable with these commands:
+## 运行展示与示例
 
 ```bash
-moon fmt --check
+moon run cmd/main
+moon run examples/service_resilience
+moon run examples/workflow
+moon run examples/seed_matrix
+moon run cmd/benchmark
+```
+
+`cmd/main` 依次展示问题、故障记录重放、预期的不变量失败、同 seed digest 对比、修复后的回归结果和 seed matrix。基准命令输出 1k、10k、100k 事件的本机测量数据及 digest；不同机器的耗时不应直接比较。
+
+更多示例及其预期输出见 [示例索引](docs/examples.md)。
+
+## 包结构
+
+- 根包 `zlhahaha/moonsim`：稳定 facade，适合大多数应用和教程。
+- `core/`：虚拟时间、稳定事件调度、随机数、trace、snapshot 和 invariant。
+- `models/`：服务可靠性、HTTP 记录重放、queue、retry、network 和状态机模型。
+- `reports/`：实验、seed matrix、timeline 和文本报告。
+
+调度器使用稳定最小堆，事件排序语义固定为 `(tick, priority, id)`。取消、snapshot/restore 和同 tick 事件顺序都有回归测试，以保证 replay 的结果可解释。
+
+## 验证
+
+在仓库根目录执行：
+
+```bash
+moon fmt
 moon check --deny-warn
+moon build
 moon info
 git diff --exit-code
 moon test --deny-warn
 moon run cmd/main
 ```
 
-The repository includes `.github/workflows/moonbit.yml` with the same core
-steps on Linux, macOS, and Windows. `moon info` writes the checked-in
-`pkg.generated.mbti` files, and `git diff --exit-code` verifies that the
-generated public interfaces are up to date.
+`moon fmt` 与 `moon info` 会检查并可能刷新格式或 `pkg.generated.mbti`；在这些变更提交后，`git diff --exit-code` 应保持通过。GitHub Actions 在 Ubuntu、macOS 和 Windows 上执行格式化、检查、构建、接口信息、测试、展示程序和代表性示例。
 
-One validated local toolchain was:
+## 适用边界
 
-```text
-moon 0.1.20260703 (6fbf8c3 2026-07-03)
-moonc v0.10.3+16975d007 (2026-07-03)
-moonrun 0.1.20260703 (6fbf8c3 2026-07-03)
-```
+`moonsim` 用于验证逻辑模型、故障流程和策略语义。它不驱动真实 HTTP 服务、数据库或部署环境，也不应被当作端到端测试的替代品。模型测试通过说明指定模型和不变量通过；真实系统仍应保留集成测试、端到端测试和运行时监控。
 
-In this toolchain, `--deny-warn` is supported by `moon check` and `moon test`.
-Formatting is checked with `moon fmt --check`, and generated package interfaces
-are checked with `moon info` followed by `git diff --exit-code`.
+## 许可证
 
-## Test Scale And Boundaries
-
-Use the smallest scale that answers the question:
-
-- Small event traces: fast unit tests for scheduling and invariants.
-- Medium scenarios: normal queue, retry, timeout, and state-machine model tests.
-- Multiple seeds: deterministic exploration of different event orderings.
-- Large event traces: pressure smoke tests for scheduler and trace handling.
-
-The project documents observed runs rather than claiming to be the fastest.
-Model tests complement, but do not replace, integration tests against real
-networks or databases, deployment tests, and production monitoring. A passing
-model means the modeled rules hold for the tested seeds and configuration; it
-does not prove that a production system is completely correct.
-
-## API Preview
-
-```moonbit
-let sim = @moonsim.Sim::new(seed=2026UL)
-ignore(sim.schedule_after(5, "request_arrives"))
-ignore(sim.schedule_after(13, "retry_succeeds"))
-ignore(sim.run_until_idle())
-
-println(sim.metrics().counter("events_executed"))
-println(sim.digest())
-```
-
-## Examples
-
-```bash
-moon run examples/queue
-moon run examples/retry
-moon run examples/traffic
-moon run examples/game_loop
-moon run examples/protocol
-moon run examples/order_state
-moon run examples/network
-moon run examples/load_balancer
-moon run examples/resilience
-moon run examples/service_resilience
-moon run examples/workflow
-moon run examples/sweep
-moon run examples/seed_matrix
-```
-
-The examples cover queueing, retry/backoff, traffic lights, fixed-tick game
-loops, message delivery, state-machine transitions, network retry behavior,
-worker scheduling strategies, resilience policies, and an end-to-end service
-reliability suite.
-
-## Documentation
-
-- `docs/design.md`: design goals, non-goals, and module boundaries.
-- `docs/api.md`: public API and package layout notes.
-- `docs/examples.md`: runnable examples and smoke-test notes.
-- `docs/tutorial.md`: retry/timeout debugging with deterministic replay and
-  invariants.
-- `docs/testing.md`: local verification, CI checks, and release gates.
-- `docs/roadmap.md`: project roadmap.
-
-## Current Status
-
-- 190+ tests plus CLI and example smoke checks.
-- No runtime dependency beyond MoonBit core.
-- Deterministic scheduler, RNG, trace/replay, metrics, scenario suites,
-  snapshots, model helpers, validation, reports, and examples.
-- Structured root, core, models, and reports package entry points.
+本项目采用 [Apache License 2.0](LICENSE)。

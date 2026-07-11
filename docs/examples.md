@@ -1,183 +1,21 @@
-# moonsim Examples
+# 示例索引
 
-## CLI Demo
+所有命令均从仓库根目录运行。示例会打印模型结果或报告，正常退出表示程序已完成；业务不变量的失败是否预期，以输出说明和对应测试为准。
 
-```bash
-moon run cmd/main
-```
+| 命令 | 用途 | 预期重点 |
+| --- | --- | --- |
+| `moon run cmd/main` | HTTP retry/timeout showcase | 故障演示为 `invariant=fail（预期的故障演示）`，同 seed replay 为 `same_digest=yes`，修复后为 `invariant=pass`。 |
+| `moon run examples/service_resilience` | 服务可靠性场景 | 观察 retry、timeout、熔断和不变量汇总。 |
+| `moon run examples/workflow` | 工作流状态变化 | 观察虚拟时间下的事件顺序和状态转移。 |
+| `moon run examples/seed_matrix` | 多 seed 探索 | 查看一批 seed 的通过/失败统计与可重放样本。 |
+| `moon run cmd/benchmark` | 调度压力测量 | 输出 1k、10k、100k 事件的本机耗时、吞吐和 digest。 |
 
-Runs the main project showcase. It prints the demo catalog, feature matrix,
-service reliability model report, invariant results, seeded digests, and a
-smaller retry-style trace. This is the fastest way to see the library working
-as an end-to-end deterministic model-testing toolkit.
+## 自定义 HTTP 记录
 
-## Smoke Test Set
+1. 用 `http_request`、`http_response` 和 `recorded_http_exchange` 表示真实测试采集的交换记录。
+2. 用 `recorded_http_transport` 赋予记录一个场景名和可选的确定性变异选项。
+3. 用 `http_reliability_policy` 定义 timeout、retry、deadline、限流和熔断策略。
+4. 调用 `replay` 检查结果和 `invariants`；失败时调用 `failure_case` 保存证据。
+5. 调整策略或业务模型后，用 `verify_fixed_policy` 和原 seed 验证回归。
 
-These examples form the minimum end-to-end smoke set used by CI and local
-release checks:
-
-```bash
-moon run examples/service_resilience
-moon run examples/workflow
-moon run examples/seed_matrix
-```
-
-They cover the main user workflow: define a model, run deterministic scenarios,
-check invariants, compare seeds, and print stable digests or reports.
-
-Examples continue to import the root `zlhahaha/moonsim` facade. Advanced users
-can use `core`, `models`, and `reports` when they want narrower package
-boundaries.
-
-## Package Coverage
-
-The smoke set intentionally exercises all public layers:
-
-- `cmd/main` imports the root facade and renders the catalog, feature matrix,
-  service reliability suite, and basic trace demo.
-- `examples/service_resilience` exercises queue pressure, retries, timeouts,
-  rate limiting, circuit breaking, invariants, reports, and seed matrices.
-- `examples/workflow` exercises dependency-aware scheduling and digest
-  stability.
-- `examples/seed_matrix` exercises deterministic multi-seed regression reports.
-
-## Queue Simulation
-
-```bash
-moon run examples/queue
-```
-
-Models five customers arriving at a single-server queue. Arrival gaps are drawn
-from the seeded RNG, service time is fixed, and the resulting final tick and
-digest are reproducible.
-
-Demonstrates:
-
-- seeded arrivals
-- scheduled arrival and finish events
-- counters
-- deterministic digest
-
-## Retry / Backoff Simulation
-
-```bash
-moon run examples/retry
-```
-
-Models a request that fails twice, backs off with deterministic jitter, and then
-succeeds.
-
-Demonstrates:
-
-- retry attempts
-- delayed scheduling
-- seeded jitter
-- counters for attempts, retries, and success
-- deterministic digest
-
-## Traffic Light Simulation
-
-```bash
-moon run examples/traffic
-```
-
-Models a cyclic traffic light and deterministic vehicle arrivals.
-
-Demonstrates:
-
-- repeating timer events
-- state-like phase changes
-- counters and sample summaries
-- deterministic digest
-
-## Game Loop Simulation
-
-```bash
-moon run examples/game_loop
-```
-
-Demonstrates fixed ticks, seeded damage rolls, checkpointing, and forked
-strategy comparison.
-
-## Message Protocol Simulation
-
-```bash
-moon run examples/protocol
-```
-
-Demonstrates node-to-node messages, delivery delay, drops, retries, timers, and
-message metrics.
-
-## Order State Simulation
-
-```bash
-moon run examples/order_state
-```
-
-Demonstrates state transitions, rejected events, transition trace records, and
-state-machine metrics.
-
-## Network Simulation
-
-```bash
-moon run examples/network
-```
-
-Demonstrates deterministic message latency, drops, retries, delivery metrics,
-and trace/digest reporting.
-
-## Load Balancer Simulation
-
-```bash
-moon run examples/load_balancer
-```
-
-Compares deterministic worker scheduling strategies such as least-queue and
-random assignment. Demonstrates seeded job arrivals, service-time samples,
-worker counters, total wait, final tick, and stable digests.
-
-## Resilience Simulation
-
-```bash
-moon run examples/resilience
-```
-
-Demonstrates circuit breaker behavior and token bucket rate limiting under
-deterministic request streams.
-
-## Service Resilience Suite
-
-```bash
-moon run examples/service_resilience
-```
-
-Runs an end-to-end reliability model with request admission, worker capacity,
-queue pressure, retries, timeout accounting, rate limiting, circuit breaking,
-SLO invariant checks, latency summaries, and a seed matrix.
-
-## Workflow Simulation
-
-```bash
-moon run examples/workflow
-```
-
-Demonstrates dependency-aware task scheduling, worker assignment, critical path
-calculation, and deterministic workflow digests.
-
-## Sweep Simulation
-
-```bash
-moon run examples/sweep
-```
-
-Demonstrates parameter sweeps across model variants and stable digest reports
-for comparing deterministic runs.
-
-## Seed Matrix Simulation
-
-```bash
-moon run examples/seed_matrix
-```
-
-Demonstrates deterministic regression matrices over multiple seeds for retry,
-network, and scheduling-style models.
+完整代码与输出解释见 [HTTP 教程](tutorial.md)。

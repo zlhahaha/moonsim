@@ -1,6 +1,6 @@
 ///|
 test "version is exposed" {
-  assert_eq(@moonsim.version(), "0.1.0")
+  assert_eq(@moonsim.version(), "0.2.0")
 }
 
 ///|
@@ -614,7 +614,7 @@ test "queue stats summarize pending events" {
   ignore(sim.cancel(a))
   let stats = sim.queue_stats()
   assert_eq(stats.pending, 1)
-  assert_eq(stats.cancelled, 1)
+  assert_eq(stats.cancelled, 0)
   assert_eq(stats.earliest_tick, 2)
   assert_eq(stats.latest_tick, 2)
 }

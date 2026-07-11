@@ -54,13 +54,7 @@ pub fn Sim::tick(self : Sim) -> Tick {
 
 ///|
 pub fn Sim::pending_count(self : Sim) -> Int {
-  let mut count = 0
-  for event in self.events {
-    if !event.cancelled {
-      count += 1
-    }
-  }
-  count
+  self.events.length()
 }
 
 ///|
@@ -83,7 +77,7 @@ pub fn Sim::schedule_at(
   let scheduled_tick = if tick < self.now { self.now } else { tick }
   let id = self.next_id
   self.next_id += 1
-  self.events.push(ScheduledEvent::new(id, scheduled_tick, name, priority~))
+  self.push_event(ScheduledEvent::new(id, scheduled_tick, name, priority~))
   self.record(id, "schedule", name)
   id
 }
@@ -121,7 +115,7 @@ pub fn Sim::schedule_repeating(
   let start = self.now + (if start_after < 0 { 0 } else { start_after })
   let id = self.next_id
   self.next_id += 1
-  self.events.push(
+  self.push_event(
     ScheduledEvent::repeating(id, start, name, every, times, priority~),
   )
   self.record(id, "schedule.repeat", name)
@@ -133,8 +127,9 @@ pub fn Sim::cancel(self : Sim, event_id : Int) -> Bool {
   let mut i = 0
   while i < self.events.length() {
     if self.events[i].id == event_id && !self.events[i].cancelled {
-      self.events[i].cancel()
-      self.record(event_id, "cancel", self.events[i].name)
+      let event = self.events.remove(i)
+      self.rebuild_event_heap()
+      self.record(event_id, "cancel", event.name)
       return true
     }
     i += 1
@@ -144,17 +139,15 @@ pub fn Sim::cancel(self : Sim, event_id : Int) -> Bool {
 
 ///|
 pub fn Sim::run_next(self : Sim) -> ScheduledEvent? {
-  let index = self.next_event_index()
-  match index {
+  match self.pop_next_event() {
     None => None
-    Some(i) => {
-      let event = self.events.remove(i)
+    Some(event) => {
       self.now = event.tick
       self.record(event.id, "execute", event.name)
       self.metrics.inc("events_executed")
       if event.is_repeating() {
         let next = event.next_repeat()
-        self.events.push(next)
+        self.push_event(next)
         self.record(next.id, "reschedule.repeat", next.name)
       }
       Some(event)
@@ -208,8 +201,7 @@ pub fn Sim::run_until_tick(
 ) -> RunReport {
   let mut steps = 0
   while steps < max_steps {
-    let index = self.next_event_index()
-    match index {
+    match self.peek_next_event() {
       None =>
         return {
           steps,
@@ -217,8 +209,8 @@ pub fn Sim::run_until_tick(
           pending: self.pending_count(),
           reason: RunStopReason::Idle,
         }
-      Some(i) =>
-        if self.events[i].tick > tick_limit {
+      Some(event) =>
+        if event.tick > tick_limit {
           return {
             steps,
             final_tick: self.now,
@@ -346,20 +338,111 @@ pub fn Sim::record(
 }
 
 ///|
-fn Sim::next_event_index(self : Sim) -> Int? {
-  let mut best : Int? = None
-  let mut i = 0
-  while i < self.events.length() {
-    if !self.events[i].cancelled {
-      match best {
-        None => best = Some(i)
-        Some(j) =>
-          if compare_event(self.events[i], self.events[j]) < 0 {
-            best = Some(i)
-          }
+fn Sim::push_event(self : Sim, event : ScheduledEvent) -> Unit {
+  self.events.push(event)
+  let mut index = self.events.length() - 1
+  let mut bubbling = true
+  while index > 0 && bubbling {
+    let parent = (index - 1) / 2
+    if compare_event(self.events[index], self.events[parent]) < 0 {
+      let current = self.events[index]
+      self.events[index] = self.events[parent]
+      self.events[parent] = current
+      index = parent
+    } else {
+      bubbling = false
+    }
+  }
+}
+
+///|
+/// Removes the heap root without observing cancellation. Cancellation remains
+/// a stable marker so snapshots preserve both pending work and cancel state.
+fn Sim::pop_heap_root(self : Sim) -> ScheduledEvent? {
+  if self.events.length() == 0 {
+    return None
+  }
+  let root = self.events[0]
+  let last = self.events.remove(self.events.length() - 1)
+  if self.events.length() > 0 {
+    self.events[0] = last
+    let mut index = 0
+    let mut settling = true
+    while settling {
+      let left = index * 2 + 1
+      if left >= self.events.length() {
+        settling = false
+      } else {
+        let right = left + 1
+        let child = if right < self.events.length() &&
+          compare_event(self.events[right], self.events[left]) < 0 {
+          right
+        } else {
+          left
+        }
+        if compare_event(self.events[child], self.events[index]) < 0 {
+          let current = self.events[index]
+          self.events[index] = self.events[child]
+          self.events[child] = current
+          index = child
+        } else {
+          settling = false
+        }
       }
     }
-    i += 1
   }
-  best
+  Some(root)
+}
+
+///|
+fn Sim::peek_next_event(self : Sim) -> ScheduledEvent? {
+  if self.events.length() == 0 {
+    None
+  } else {
+    Some(self.events[0])
+  }
+}
+
+///|
+fn Sim::pop_next_event(self : Sim) -> ScheduledEvent? {
+  match self.peek_next_event() {
+    None => None
+    Some(_) => self.pop_heap_root()
+  }
+}
+
+///|
+fn Sim::rebuild_event_heap(self : Sim) -> Unit {
+  let mut parent = self.events.length() / 2
+  while parent > 0 {
+    parent -= 1
+    self.sift_down_event(parent)
+  }
+}
+
+///|
+fn Sim::sift_down_event(self : Sim, start : Int) -> Unit {
+  let mut index = start
+  let mut settling = true
+  while settling {
+    let left = index * 2 + 1
+    if left >= self.events.length() {
+      settling = false
+    } else {
+      let right = left + 1
+      let mut child = left
+      if right < self.events.length() &&
+        compare_event(self.events[right], self.events[left]) < 0 {
+        child = right
+      }
+      if compare_event(self.events[child], self.events[index]) < 0 {
+        let current = self.events[index]
+        self.events[index] = self.events[child]
+        self.events[child] = current
+        index = child
+      } else {
+        settling = false
+      }
+    }
+  }
 }

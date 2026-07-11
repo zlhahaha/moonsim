@@ -62,6 +62,7 @@ pub fn validate_sim(sim : Sim) -> ValidationReport {
   }
   validate_event_ids(sim.events, issues)
   validate_event_ticks(sim.events, sim.now, issues)
+  validate_event_heap(sim.events, issues)
   { subject: "sim", issues }
 }
 
@@ -113,6 +114,26 @@ fn validate_event_ticks(
         ),
       )
     }
+  }
+}
+
+///|
+fn validate_event_heap(
+  events : Array[ScheduledEvent],
+  issues : Array[ValidationIssue],
+) -> Unit {
+  let mut index = 1
+  while index < events.length() {
+    let parent = (index - 1) / 2
+    if compare_event(events[index], events[parent]) < 0 {
+      issues.push(
+        validation_issue(
+          "invalid-event-heap", "pending events must preserve stable heap ordering",
+        ),
+      )
+      return
+    }
+    index += 1
   }
 }
 

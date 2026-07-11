@@ -1,123 +1,69 @@
-# moonsim API
+# API 概览
 
-This document describes the current public API shape.
-
-The API is centered on deterministic model tests rather than an Actor runtime:
-`Sim`, scenario suites, metrics, snapshots, and trace/replay are the primary
-surface.
-
-## Package Layout
-
-`moonsim` exposes a stable root facade plus focused subpackages:
-
-- `zlhahaha/moonsim`: recommended starting point for examples and application
-  code. It keeps the common simulation, model, and report APIs available from
-  one import.
-- `zlhahaha/moonsim/core`: virtual time, scheduling, deterministic RNG, traces,
-  replay comparison, invariants, and validation.
-- `zlhahaha/moonsim/models`: queue, retry, network, load balancer, workflow,
-  and service reliability model entry points.
-- `zlhahaha/moonsim/reports`: text reports, trace/metrics summaries, feature
-  matrices, and demo catalogs.
-
-The focused packages are thin entry points over the same stable implementation,
-so existing root-package users do not need to migrate.
+大多数用户只需导入根包：
 
 ```moonbit
-let sim = @core.sim(seed=2026UL)
-let result = @models.run_default_service_resilience_suite()
-println(@reports.render_service_resilience_report(result))
+import { "zlhahaha/moonsim" }
 ```
 
-## Simulation
+根包提供稳定 facade；内部的 `core`、`models` 和 `reports` 包用于按领域组织实现，不要求普通用户直接依赖。
+
+## core：确定性执行内核
+
+- `Sim`：虚拟时间模拟器，负责事件安排、执行、trace 与 digest。
+- 事件顺序：严格按 `(tick, priority, id)` 排序；同 tick 的结果稳定可解释。
+- snapshot/restore：保存待执行事件和取消状态，恢复后相同后续输入应得到相同 digest。
+- `InvariantReport`：收集业务规则，通过 `passed()` 判断是否全部满足。
+
+调度器使用私有稳定最小堆。其实现细节不属于用户 API，但取消事件、同 tick 优先级和恢复后的顺序均有测试覆盖。
+
+## models：HTTP 可靠性记录与重放
+
+### 基本类型
+
+- `HttpRequest`：`id`、`http_method`、`path`、`attempt`。
+- `HttpResponse`：HTTP `status` 与 `body_summary`。
+- `HttpOutcome`：`Response`、`ConnectionFailure` 或 `Cancelled`。
+- `RecordedHttpExchange`：一次请求的开始 tick、延迟和结果。
+
+使用构造函数创建这些值：`http_request`、`http_response`、`recorded_http_exchange`。
+
+### 传输记录与策略
+
+`RecordedHttpTransport` 表示一个命名场景及其交换记录：
 
 ```moonbit
-let sim = @moonsim.Sim::new(seed=2026UL)
+let transport = @moonsim.recorded_http_transport(
+  "checkout-timeout",
+  exchanges,
+  options=@moonsim.http_replay_options(latency_jitter=1),
+)
 ```
 
-Key methods:
+`HttpReliabilityPolicy` 由 `http_reliability_policy` 创建，配置 `seed`、timeout、retry limit、backoff、每 tick 限流、熔断阈值/恢复时间、业务 deadline 和 `accept_late_success`。`HttpReplayOptions` 可以用固定 seed 对延迟、连接失败百分比和同 tick 顺序进行确定性变异。
 
-- `time() -> Int`: current virtual tick.
-- `schedule_at(tick, name, priority?) -> Int`: schedule an event at a virtual tick.
-- `schedule_after(delay, name, priority?) -> Int`: schedule relative to current tick.
-- `cancel(event_id) -> Bool`: cancel a pending event.
-- `pending_count() -> Int`: count non-cancelled pending events.
-- `run_next() -> ScheduledEvent?`: execute the next deterministic event.
-- `run_until_idle(max_steps?) -> Int`: execute until no events remain or the step limit is reached.
-- `next_int(bound) -> Int`: draw from the deterministic RNG and record the draw.
-- `trace() -> Array[TraceEntry]`: copy the trace log.
-- `digest() -> UInt64`: compute a deterministic digest from the trace.
-- `metrics() -> Metrics`: access counters.
-- `inc_counter(name, delta?)`: increment a simulation counter and trace it.
+调用 `transport.replay(policy=...)` 返回 `HttpReplayResult`，其中包括：
 
-## Event Ordering
+- `http_successes`、`on_time_successes`、`late_successes`；
+- `timed_out`、`connection_failures`、`cancelled`、`deadline_misses`；
+- `duplicate_processed`、`retry_limit_violations`、`rate_limited`、`circuit_rejected`；
+- `invariants`、`trace` 与 `digest`。
 
-Events are ordered by:
+`transport.to_json(policy=...)` 输出稳定的 JSON 证据。它仅序列化模型记录，不进行真实网络 I/O。
 
-1. lower tick
-2. lower priority
-3. lower event id
+### 失败证据与回归
 
-The event id tie-breaker makes same-tick behavior stable.
+`transport.failure_case(policy=...)` 在有不变量失败时返回 `HttpFailureCase`。该对象保存场景、原策略、seed、失败规则、digest、交换记录和重放选项：
 
-## Trace
+- `evidence.replay()`：用原配置稳定重放。
+- `evidence.verify_fixed_policy(policy)`：用修复策略和原失败 seed 回归。
 
-Trace entries record deterministic actions:
+`retry_timeout_recording()`、`retry_timeout_fault_policy()` 和 `retry_timeout_fixed_policy()` 是可运行的教学 fixture，也可作为自定义记录的参照。
 
-- `schedule`
-- `cancel`
-- `execute`
-- `rng.int`
-- `metric.counter`
+## reports：实验结果
 
-Use `TraceEntry::format()` for human-readable output and `trace_digest()` or
-`Sim::digest()` for regression checks.
+报告层提供 experiment、seed matrix、feature matrix、timeline 和文本渲染能力。它们用于将一批确定性运行汇总为可读结果；具体用法可见 [示例索引](examples.md)。
 
-Trace utilities also support:
+## 设计边界
 
-- `query_trace(...)`: filter by kind, detail text, and tick range.
-- `TraceQueryResult::kind_count(...)`: count trace entries by kind.
-- `expect_trace_*`: assert trace count, detail, order, monotonic ticks, and digest.
-- `replay_baseline(...)` and `compare_replay(...)`: compare a later run against
-  an in-memory baseline of trace, counters, and gauges.
-
-## Metrics
-
-Metrics support counters, gauges, samples, summaries, distributions, snapshots,
-and diffs:
-
-```moonbit
-sim.inc_counter("requests")
-sim.inc_counter("bytes", delta=128)
-let requests = sim.metrics().counter("requests")
-let before = sim.metrics().metric_snapshot()
-sim.sample("latency", 7)
-let diff = sim.metrics().diff_from(before)
-```
-
-The scheduler automatically increments `events_executed`.
-
-## Higher-Level APIs
-
-The library also includes:
-
-- `Scenario`: scenario assertions and readable failure reports.
-- `ScenarioSuite`: multi-scenario aggregation and suite reports.
-- `SimSnapshot`: checkpoint, restore, and fork comparison.
-- `Backoff` and `TimerPlan`: deterministic retry and interval helpers.
-- `StateMachine`: transition modeling and trace integration.
-- `MessageBus`: delayed message delivery and drop modeling.
-- `ValidationReport`: invariant checks for simulations, traces, and metrics.
-- `ExperimentReport`: model-suite reporting for demos and comparisons.
-- `run_network_model`: deterministic network delivery, drop, and retry model.
-- `run_load_balancer_model`: multi-worker scheduling strategy model.
-- `run_circuit_breaker_model`: service protection model.
-- `run_token_bucket_model`: deterministic rate limiting model.
-- `run_service_resilience_suite`: request queue, retry, timeout, rate limit,
-  circuit breaker, SLO invariant, trace digest, and report workflow.
-- `service_resilience_seed_matrix`: run the service reliability suite across
-  multiple seeds for regression coverage.
-- `WorkflowPlan` and `run_workflow_model`: dependency-aware task scheduling.
-- `SweepReport`: compare deterministic model variants.
-- `InvariantReport`: aggregate reusable simulation invariants.
-- `SeedMatrix`: run deterministic model families across multiple seeds.
+这些 API 描述逻辑模型而非真实客户端。请在真实 HTTP、数据库或端到端测试之外使用它们，作为可复现故障、策略验证和回归测试的补充。

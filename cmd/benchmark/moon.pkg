@@ -1,0 +1,8 @@
+import {
+  "moonbitlang/core/bench",
+  "zlhahaha/moonsim",
+}
+
+options(
+  "is-main": true,
+)

@@ -73,6 +73,63 @@ test "regression event id tie break is stable" {
 }
 
 ///|
+test "regression heap skips cancelled roots and preserves priority" {
+  let sim = @moonsim.Sim::new()
+  let cancelled = sim.schedule_at(2, "cancelled", priority=-10)
+  ignore(sim.schedule_at(2, "normal", priority=1))
+  ignore(sim.schedule_at(2, "urgent", priority=0))
+  assert_eq(sim.cancel(cancelled), true)
+  assert_eq(sim.run_next().unwrap().name, "urgent")
+  assert_eq(sim.run_next().unwrap().name, "normal")
+  assert_true(sim.run_next() is None)
+  assert_eq(sim.validate().passed(), true)
+}
+
+///|
+test "regression snapshot restores cancelled heap entries" {
+  let sim = @moonsim.Sim::new(seed=44UL)
+  let cancelled = sim.schedule_at(2, "cancelled", priority=-10)
+  ignore(sim.schedule_at(2, "second", priority=1))
+  ignore(sim.schedule_at(2, "first", priority=0))
+  ignore(sim.cancel(cancelled))
+  let restored = @moonsim.Sim::restore(sim.snapshot(name="cancelled-heap"))
+  assert_eq(restored.pending_count(), 2)
+  assert_eq(restored.run_next().unwrap().name, "first")
+  assert_eq(restored.run_next().unwrap().name, "second")
+  assert_true(restored.run_next() is None)
+  assert_eq(restored.validate().passed(), true)
+}
+
+///|
+test "regression heap digest is stable for equal schedules" {
+  let left = @moonsim.Sim::new(seed=919UL)
+  let right = @moonsim.Sim::new(seed=919UL)
+  let mut index = 0
+  while index < 20 {
+    ignore(left.schedule_at(index * 7 % 23, "work", priority=index % 3))
+    ignore(right.schedule_at(index * 7 % 23, "work", priority=index % 3))
+    index += 1
+  }
+  ignore(left.run_until_idle())
+  ignore(right.run_until_idle())
+  assert_eq(left.digest(), right.digest())
+}
+
+///|
+test "regression heap scheduler completes ten thousand events" {
+  let sim = @moonsim.Sim::new(seed=10000UL)
+  let mut index = 0
+  while index < 10000 {
+    ignore(sim.schedule_at(10000 - index, "load"))
+    index += 1
+  }
+  assert_eq(sim.run_until_idle(max_steps=10001), 10000)
+  assert_eq(sim.pending_count(), 0)
+  assert_eq(sim.metrics().counter("events_executed"), 10000)
+  assert_eq(sim.validate().passed(), true)
+}
+
+///|
 test "regression cancel missing returns false" {
   let sim = @moonsim.Sim::new()
   assert_eq(sim.cancel(999), false)
@@ -87,11 +144,11 @@ test "regression queue stats empty are zero" {
 }
 
 ///|
-test "regression event views include cancelled status" {
+test "regression event views omit removed cancellations" {
   let sim = @moonsim.Sim::new()
   let id = sim.schedule_after(1, "drop")
   ignore(sim.cancel(id))
-  assert_eq(sim.event_views()[0].status, "cancelled")
+  assert_eq(sim.event_views().length(), 0)
 }
 
 ///|

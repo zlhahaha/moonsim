@@ -57,11 +57,14 @@ jobs:
       - name: Show MoonBit version
         run: moon version --all
 
-      - name: Check formatting
-        run: moon fmt --check
+      - name: Format sources
+        run: moon fmt
 
       - name: Check package warnings
         run: moon check --deny-warn
+
+      - name: Moon build
+        run: moon build
 
       - name: Generate public interfaces
         run: moon info

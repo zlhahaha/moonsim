@@ -64,6 +64,20 @@ pub fn experiment_case(String, @models.ModelSummary, notes? : String) -> @report
 
 pub fn find_demo(String) -> @reports.DemoDescriptor?
 
+pub fn http_cancelled_outcome() -> @models.HttpOutcome
+
+pub fn http_connection_failure_outcome(String) -> @models.HttpOutcome
+
+pub fn http_reliability_policy(seed? : UInt64, retry_limit? : Int, timeout_ticks? : Int, backoff_ticks? : Int, deadline_ticks? : Int, rate_limit_per_tick? : Int, circuit_failure_threshold? : Int, circuit_reset_ticks? : Int, accept_late_success? : Bool) -> @models.HttpReliabilityPolicy
+
+pub fn http_replay_options(latency_jitter? : Int, injected_failure_percent? : Int, reverse_same_tick_order? : Bool) -> @models.HttpReplayOptions
+
+pub fn http_request(String, http_method? : String, path? : String, attempt? : Int) -> @models.HttpRequest
+
+pub fn http_response(Int, body_summary? : String) -> @models.HttpResponse
+
+pub fn http_response_outcome(@models.HttpResponse) -> @models.HttpOutcome
+
 pub fn invariant_check(String, Bool, detail? : String) -> @core.InvariantCheck
 
 pub fn load_balancer_config(seed? : UInt64, jobs? : Int, workers? : Int, max_arrival_gap? : Int, min_service? : Int, max_service? : Int, strategy? : String) -> @models.LoadBalancerConfig
@@ -85,6 +99,10 @@ pub fn query_trace(Array[@core.TraceEntry], @core.TraceQuery) -> @core.TraceQuer
 pub fn queue_config(seed? : UInt64, customers? : Int, max_arrival_gap? : Int, service_time? : Int) -> @models.QueueConfig
 
 pub fn queue_summary(@models.QueueResult) -> @models.ModelSummary
+
+pub fn recorded_http_exchange(@models.HttpRequest, @models.HttpOutcome, started_tick? : Int, latency_ticks? : Int) -> @models.RecordedHttpExchange
+
+pub fn recorded_http_transport(String, Array[@models.RecordedHttpExchange], options? : @models.HttpReplayOptions) -> @models.RecordedHttpTransport
 
 pub fn reliability_config(seed? : UInt64, operations? : Int, fail_percent? : Int, retry_limit? : Int, backoff? : Int) -> @models.ReliabilityConfig
 
@@ -123,6 +141,12 @@ pub fn retry_config(seed? : UInt64, max_attempts? : Int, fail_until? : Int, init
 pub fn retry_seed_matrix(Array[UInt64]) -> @models.SeedMatrix
 
 pub fn retry_summary(@models.RetryResult) -> @models.ModelSummary
+
+pub fn retry_timeout_fault_policy() -> @models.HttpReliabilityPolicy
+
+pub fn retry_timeout_fixed_policy() -> @models.HttpReliabilityPolicy
+
+pub fn retry_timeout_recording() -> @models.RecordedHttpTransport
 
 pub fn run_circuit_breaker_model(seed? : UInt64, calls? : Int) -> @models.CircuitBreakerResult
 
@@ -233,6 +257,20 @@ pub using @reports {type FeatureMatrix}
 
 pub using @core {type ForkComparison}
 
+pub using @models {type HttpFailureCase}
+
+pub using @models {type HttpOutcome}
+
+pub using @models {type HttpReliabilityPolicy}
+
+pub using @models {type HttpReplayOptions}
+
+pub using @models {type HttpReplayResult}
+
+pub using @models {type HttpRequest}
+
+pub using @models {type HttpResponse}
+
 pub using @core {type IntRange}
 
 pub using @core {type InvariantCheck}
@@ -266,6 +304,10 @@ pub using @models {type QueueConfig}
 pub using @models {type QueueResult}
 
 pub using @core {type QueueStats}
+
+pub using @models {type RecordedHttpExchange}
+
+pub using @models {type RecordedHttpTransport}
 
 pub using @models {type ReliabilityConfig}
 
