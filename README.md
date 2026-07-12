@@ -168,5 +168,3 @@ moon run cmd/benchmark
 benchmark 保留 1k、10k、100k 事件测量；不同机器的耗时不可直接比较。项目采用 [Apache License 2.0](LICENSE)。
 - 许可证：[Apache-2.0](LICENSE)
 - 兼容策略：0.3.x 保持根包 facade 和既有 examples 可用；API 收敛优先采用兼容新增与迁移说明。
-
-Gitlink 镜像地址将在核验默认分支和提交历史一致后补入；在此之前不提供未经验证的链接。
