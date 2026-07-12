@@ -46,7 +46,7 @@ Set-Location moonsim-consumer
 moon add zlhahaha/moonsim@0.3.0
 ```
 
-在 `src/main/moon.pkg` 中声明根包依赖：
+在 `cmd/main/moon.pkg` 中声明根包依赖：
 
 ```moonbit
 import {
@@ -54,11 +54,10 @@ import {
 }
 ```
 
-将 `src/main/main.mbt` 替换为：
+将 `cmd/main/main.mbt` 替换为。依赖已经在 `moon.pkg` 中声明，MoonBit
+源文件不需要、也不能再写 `import`：
 
 ```moonbit
-import { "zlhahaha/moonsim" }
-
 fn main {
   let stream = @moonsim.event_stream()
   let sent = stream.record(
@@ -88,7 +87,7 @@ fn main {
 
 ```powershell
 moon check --deny-warn
-moon run src/main
+moon run cmd/main
 ```
 
 输出中的 digest 是稳定整数；关键结果应为：
