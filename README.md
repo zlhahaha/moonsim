@@ -27,6 +27,7 @@
 
 | 工具或方向 | 擅长解决的问题 | 与 moonsim 的区别 |
 | --- | --- | --- |
+| Akka TestKit | 探测 actor 消息、时序与监督行为 | `moonsim` 不提供 actor runtime；它把消息、任务、定时器、状态转移和外部调用统一为可重放的因果事件 |
 | Python `SimPy` | 用进程、资源和环境构建离散事件模拟 | `moonsim` 更聚焦软件系统事件、seed 故障变异、invariant、稳定 digest 与失败重放，而不是通用连续/流程仿真建模 |
 | Java `DESMO-J`、`CloudSim` | 大型离散事件或云资源仿真 | `moonsim` 保持轻量，并面向消息、任务、状态机和外部调用的模型测试，不提供云基础设施模拟器 |
 | Haskell `QuickCheck`、Python `Hypothesis` | 自动生成输入并缩小属性测试失败 | `moonsim` 当前不承诺通用生成器或自动 shrinking；它专注虚拟时间下的事件顺序、因果关系、故障策略和 seed replay |
@@ -37,11 +38,23 @@
 
 ## 安装与最小示例
 
-```bash
-moon add zlhahaha/moonsim
+下面的步骤从空目录创建独立项目，并使用 mooncakes.io 上的 `0.3.0`，不依赖本仓库源码：
+
+```powershell
+moon new moonsim-consumer
+Set-Location moonsim-consumer
+moon add zlhahaha/moonsim@0.3.0
 ```
 
-普通用户只需导入根包：
+在 `src/main/moon.pkg` 中声明根包依赖：
+
+```moonbit
+import {
+  "zlhahaha/moonsim",
+}
+```
+
+将 `src/main/main.mbt` 替换为：
 
 ```moonbit
 import { "zlhahaha/moonsim" }
@@ -71,6 +84,20 @@ fn main {
 }
 ```
 
+运行：
+
+```powershell
+moon check --deny-warn
+moon run src/main
+```
+
+输出中的 digest 是稳定整数；关键结果应为：
+
+```text
+failed_rule=order_completed_once
+same_seed=true
+```
+
 业务 invariant 可以根据 `EventReplayResult.events` 检查最终分类次数、确认前是否丢失、重试上限、依赖顺序与终态保护。框架同时提供事件结构自身的因果与时间检查。
 
 ## 稳定事件类型
@@ -82,6 +109,23 @@ fn main {
 - `ExternalCall`：HTTP 等外部交互的记录；不代表真实网络客户端。
 
 未来的 Queue、数据库和 MQ 能力应作为适配器或上层模型扩展，不进入核心枚举，也不让核心包绑定具体基础设施。
+
+## 能力与证据
+
+| 能力 | 可运行证据 | 测试或文档证据 |
+| --- | --- | --- |
+| 五类事件、稳定排序与因果关系 | `moon run cmd/main` | [API 文档](docs/api.md)、`core/event_stream_test.mbt` |
+| seed 变异、digest 与失败重放 | `moon run examples/queue` | `core/event_stream_test.mbt`、`models/event_stream_test.mbt` |
+| 消息重复投递、确认、重试与死信 | `moon run examples/queue` | `models/event_stream_test.mbt` |
+| 任务依赖、取消与终态保护 | `moon run examples/workflow` | `models/event_stream_test.mbt` |
+| HTTP 记录重放兼容适配 | `moon run examples/service_resilience` | `models/event_stream_test.mbt`、[教程](docs/tutorial.md) |
+| 10k smoke 与 1k/10k/100k 容量观测 | `moon run cmd/benchmark` | `core/event_stream_test.mbt` |
+
+## 与 MoonBit 常规测试的关系
+
+`moonsim` 不替代 `moon test`，而是作为测试代码中的模型层运行。普通单元测试适合验证一次函数调用；`moonsim` 补足跨虚拟时间、跨组件、带因果关系和故障注入的行为验证。模型发现的 seed 可以写回普通测试，让同一故障持续进入 CI。
+
+适合：消息可靠性、重试与超时、任务依赖、状态机、定时器、限流熔断、外部调用记录重放。不适合：真实网络压测、真实数据库一致性验证、生产 MQ 替代品或通用并发运行时。
 
 ## 旗舰场景
 
@@ -123,3 +167,13 @@ moon run cmd/benchmark
 ```
 
 benchmark 保留 1k、10k、100k 事件测量；不同机器的耗时不可直接比较。项目采用 [Apache License 2.0](LICENSE)。
+
+## 项目信息
+
+- GitHub：[zlhahaha/moonsim](https://github.com/zlhahaha/moonsim)
+- mooncakes.io：[`zlhahaha/moonsim`](https://mooncakes.io/docs/#/zlhahaha/moonsim/)
+- 当前版本：`0.3.0`
+- 许可证：[Apache-2.0](LICENSE)
+- 兼容策略：0.3.x 保持根包 facade 和既有 examples 可用；API 收敛优先采用兼容新增与迁移说明。
+
+Gitlink 镜像地址将在核验默认分支和提交历史一致后补入；在此之前不提供未经验证的链接。

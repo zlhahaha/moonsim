@@ -8,6 +8,8 @@
 
 `EventRecord` 保留稳定的 `id`、`correlation_id`、`source`、`target`、`label`、`tick`、`priority` 和 `parent_id`，以及用于证据的 `payload`、`dropped`、`failed`。
 
+字段约定：`id` 在单个流内唯一且递增；`tick` 必须非负；`parent_id=0` 表示没有父事件，否则父事件必须存在且不能晚于子事件。`correlation_id` 连接同一业务过程，`source` 和 `target` 描述逻辑端点，`label` 承载适配器定义的动作名称。稳定排序键为 `(tick, priority, id)`。
+
 ## EventStream
 
 - `event_stream()` / `EventStream::new()`：创建流。
@@ -29,4 +31,4 @@
 
 `MessageBus::event_stream()`、`TimerPlan::event_stream()`、`StateMachine::event_stream()`、`WorkflowResult::event_stream()`、Queue 结果与 HTTP recording 都可映射到通用流。现有 facade API 保留；HTTP API 是 `ExternalCall` 适配示例，而非项目中心。
 
-0.3.x 稳定承诺覆盖五种 `EventKind`、事件标识/关联/因果字段和根包构造入口。未来适配器可以新增 label 和模型，但不承诺自动驱动真实数据库、HTTP 或 MQ。
+0.3.x 稳定承诺覆盖五种 `EventKind`、事件标识/关联/因果字段、排序规则和根包构造入口。未来适配器可以新增 label、payload 约定和上层模型，但不会扩张核心枚举来绑定 Queue、数据库、HTTP 或 MQ，也不承诺自动驱动这些真实系统。

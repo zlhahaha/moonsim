@@ -11,6 +11,8 @@
 
 完整可运行代码见 `examples/queue`。任务超时与依赖保护采用相同流程，见 `examples/workflow`。
 
+运行故障版本时，`FAIL (expected finding)` 表示 invariant 按预期抓到了模型缺陷，进程会正常退出；修复策略必须用同一 seed 回归并得到稳定 digest。真实回归失败应由 `moon test` 捕获，而不能伪装成展示结果。
+
 ## HTTP 扩展案例
 
 真实集成测试或日志采集可以把请求/响应转换为 `RecordedHttpExchange`。`RecordedHttpTransport` 在虚拟时间中重放记录，并映射为 `ExternalCall` 事件。它是兼容适配器，不会发起真实 HTTP 请求，参见 `examples/service_resilience` 与 `cmd/main` 的最后一节。
