@@ -4,7 +4,7 @@
 
 ## 五种稳定事件
 
-`EventKind` 是封闭枚举：`Message`、`Task`、`Timer`、`StateTransition`、`ExternalCall`。它们分别表达消息事实、任务生命周期、时间触发、状态转移与外部交互记录。Queue、数据库、MQ 等不会自动连接真实基础设施，应由适配器或上层模型映射到这些稳定语义。
+`EventKind` 是封闭枚举：`Message`、`Task`、`Timer`、`StateTransition`、`ExternalCall`。它们分别表达消息事实、任务生命周期、时间触发、状态转移与外部交互记录。Queue、数据库、MQ 等适配器可以映射到这些稳定语义，并直接复用排序、变异、digest、invariant 与 replay。
 
 `EventRecord` 保留稳定的 `id`、`correlation_id`、`source`、`target`、`label`、`tick`、`priority` 和 `parent_id`，以及用于证据的 `payload`、`dropped`、`failed`。
 
@@ -31,4 +31,4 @@
 
 `MessageBus::event_stream()`、`TimerPlan::event_stream()`、`StateMachine::event_stream()`、`WorkflowResult::event_stream()`、Queue 结果与 HTTP recording 都可映射到通用流。现有 facade API 保留；HTTP API 是 `ExternalCall` 适配示例，而非项目中心。
 
-0.3.x 稳定承诺覆盖五种 `EventKind`、事件标识/关联/因果字段、排序规则和根包构造入口。未来适配器可以新增 label、payload 约定和上层模型，但不会扩张核心枚举来绑定 Queue、数据库、HTTP 或 MQ，也不承诺自动驱动这些真实系统。
+0.3.x 稳定承诺覆盖五种 `EventKind`、事件标识/关联/因果字段、排序规则和根包构造入口。未来适配器可以新增 label、payload 约定和上层模型，同时继续复用稳定核心，无需为每种基础设施改动事件枚举。

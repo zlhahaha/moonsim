@@ -1,6 +1,6 @@
 # 教程：从重复投递到可重放回归
 
-本教程以消息队列重复投递为主线。目标不是连接真实 MQ，而是把已经观察到的业务事实记录为确定性事件，并验证“每条消息最终分类一次”。
+本教程以消息队列重复投递为主线：把生产、投递、确认、超时和重试记录为确定性事件，并验证“每条消息最终分类一次”。同一模型既能使用人工构造的场景，也能接收 MQ 适配器采集的业务事实。
 
 1. 创建 `EventStream`，用同一个 `correlation_id` 记录 `message.produce`、`message.deliver`、`ack.timeout`、`message.retry` 与 `message.ack`。
 2. 用 `parent_id` 保留生产、投递、超时和重试的因果关系；tick 使用虚拟时间。
@@ -15,4 +15,4 @@
 
 ## HTTP 扩展案例
 
-真实集成测试或日志采集可以把请求/响应转换为 `RecordedHttpExchange`。`RecordedHttpTransport` 在虚拟时间中重放记录，并映射为 `ExternalCall` 事件。它是兼容适配器，不会发起真实 HTTP 请求，参见 `examples/service_resilience` 与 `cmd/main` 的最后一节。
+集成测试或日志采集可以把请求/响应转换为 `RecordedHttpExchange`。`RecordedHttpTransport` 在虚拟时间中重放记录，并映射为 `ExternalCall` 事件，从而让 HTTP 延迟、失败和恢复过程复用通用的 invariant、digest 与同 seed replay。参见 `examples/service_resilience` 与 `cmd/main` 的最后一节。
