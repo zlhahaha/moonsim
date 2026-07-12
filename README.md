@@ -167,12 +167,6 @@ moon run cmd/benchmark
 ```
 
 benchmark 保留 1k、10k、100k 事件测量；不同机器的耗时不可直接比较。项目采用 [Apache License 2.0](LICENSE)。
-
-## 项目信息
-
-- GitHub：[zlhahaha/moonsim](https://github.com/zlhahaha/moonsim)
-- mooncakes.io：[`zlhahaha/moonsim`](https://mooncakes.io/docs/#/zlhahaha/moonsim/)
-- 当前版本：`0.3.0`
 - 许可证：[Apache-2.0](LICENSE)
 - 兼容策略：0.3.x 保持根包 facade 和既有 examples 可用；API 收敛优先采用兼容新增与迁移说明。
 
